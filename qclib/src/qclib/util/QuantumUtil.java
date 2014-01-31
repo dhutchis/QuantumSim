@@ -1,4 +1,4 @@
-package qclib;
+package qclib.util;
 
 public class QuantumUtil {
 	
