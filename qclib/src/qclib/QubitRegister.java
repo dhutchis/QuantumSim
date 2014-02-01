@@ -11,19 +11,20 @@ public class QubitRegister {
 	/** Number of qubits in the quantum register */
 	private int numbits;
 	
-	private Map<Integer,Pair<Integer,QubitContainer>> regmap;
+	private Pair<Integer,QubitContainer>[] regmap;
 	
 	/**
 	 * Initializes each qubit to state |0> inside separate qubit containers of size 1.
 	 * The qubit containers are dense.
 	 * @param numbits
 	 */
+	@SuppressWarnings("unchecked")
 	public QubitRegister(int numbits) {
 		this.numbits = numbits;
-		regmap = new HashMap<Integer,Pair<Integer,QubitContainer>>(numbits);
+		regmap = new Pair[numbits];
 		
 		for (int i=0; i<numbits; i++)
-			regmap.put(i, new Pair<Integer,QubitContainer>(0, new QubitContainer(1, false)));
+			regmap[i] = new Pair<Integer,QubitContainer>(0, new QubitContainer(1, false));
 		
 	}
 	

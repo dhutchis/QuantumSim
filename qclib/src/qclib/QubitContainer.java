@@ -5,6 +5,7 @@ import org.apache.commons.math3.complex.ComplexField;
 import org.apache.commons.math3.linear.ArrayFieldVector;
 import org.apache.commons.math3.linear.FieldVector;
 import org.apache.commons.math3.linear.SparseFieldVector;
+import org.apache.commons.math3.util.ArithmeticUtils;
 
 import qclib.util.QuantumUtil;
 
@@ -19,9 +20,9 @@ public class QubitContainer {
 	public QubitContainer(int numbits, boolean isSparse) {
 		this.numbits = numbits;
 		if (isSparse) {
-			data = new SparseFieldVector<Complex>(ComplexField.getInstance(),numbits);
+			data = new SparseFieldVector<Complex>(ComplexField.getInstance(), 1<<numbits);
 		} else {
-			data = new ArrayFieldVector<Complex>(ComplexField.getInstance(),numbits);
+			data = new ArrayFieldVector<Complex>(ComplexField.getInstance(), 1<<numbits);
 		}
 	}
 	
@@ -56,6 +57,34 @@ public class QubitContainer {
 		if (!QuantumUtil.isApproxZero(sumSquares - 1.0))
 			throw new IllegalStateException("Qubit data does not have proper amplitudes (squares of amps sum to "+sumSquares+")");
 	}
+	
+	
+	/**
+	 * Apply op to the target bits of invec and return a new (dense) vector, 
+	 * 		size = targetbits.length, with the results.
+	 * @param op
+	 * @param invec
+	 * @param targetbits
+	 * @return
+	 /
+	public static FieldVector<Complex> doOpStatic(Operator op, 
+			FieldVector<Complex> invec, int... targetbits) {
+		if (op == null || targetbits == null || targetbits.length > numbits 
+				|| op.getArity() != targetbits.length)
+			throw new IllegalArgumentException("bad argument operator targetbits");
+		int targetbitmask = 0;
+		for (int tb : targetbits)
+			targetbitmask |= 1<<tb;
+		FieldVector<Complex> outvec = new ArrayFieldVector<Complex>(ComplexField.getInstance(),targetbits.length); 
+		doOpFree(op, targetbits, 0, targetbitmask, 0, invec, outvec);
+		return null;
+	}*/
+	
+	// TODO
+	// translateVectorBigToSmall(
+	// translateVectorSmallToBig(
+	
+	
 	
 	/**
 	 * Perform Operation on the targetbits in the order specified.
@@ -152,7 +181,7 @@ public class QubitContainer {
 			// avoided division by zero if we don't need to normalize!
 			// if measure 0, normalize all the amplitudes with a 0 at targetbit
 			//		and set all the amplitudes with a 1 at targetbit 
-			measureNormalize(targetbit, 0, result ? 1<<targetbit : 0, sumSquaresResult);
+			measureNormalize(targetbit, 0, result ? 1<<targetbit : 0, Math.sqrt(sumSquaresResult));
 			measureSetZero(targetbit, 0, result ? 0 : 1<<targetbit);
 		}
 		return result;
