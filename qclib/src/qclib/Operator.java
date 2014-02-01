@@ -1,7 +1,10 @@
 package qclib;
 
+import java.util.Map;
+
 import org.apache.commons.math3.complex.Complex;
 import org.apache.commons.math3.linear.FieldVector;
+import org.apache.commons.math3.util.Pair;
 
 public abstract class Operator {
 	/** How many qubits the operator operates on. */
@@ -41,6 +44,8 @@ public abstract class Operator {
 			
 		};
 	}
+	
+	
 	
 	// idea for method: public Operator tensorUp(int[] mybits, Operator[] otherops, int[][] otherbits)
 	// combine two 1-arg Operators into a 2-arg Operator

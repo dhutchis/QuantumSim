@@ -125,7 +125,11 @@ public class QubitContainer {
 			doOpTargetGet(targetbits, vec, origbitset, vecidx+1, vecbitset); // targetbits[targetidx]->1
 		}
 	}
-
+	
+	/// ---------------------
+	/// MEASUREMENT FUNCTIONS
+	/// ---------------------
+	
 	/**
 	 * Measure a single bit. Uses probability according to the amplitudes.
 	 * Collapses the container to a state with only the measured bit.
@@ -135,25 +139,67 @@ public class QubitContainer {
 	public boolean measure(int targetbit) {
 		if (targetbit < 0 || targetbit >= numbits)
 			throw new IllegalArgumentException("bad target measurement bit: "+targetbit);
-		double sumSquaresZero = measureHelp(targetbit, 0, 0);
-		double sumSquaresOne = measureHelp(targetbit, 0, 1<<targetbit);
+		double sumSquaresZero = measureGetSumSquares(targetbit, 0, 0);
+		double sumSquaresOne = measureGetSumSquares(targetbit, 0, 1<<targetbit);
 		assert QuantumUtil.isApproxZero(sumSquaresZero + sumSquaresOne - 1); // sanity check
 		
 		// return 0 with probability sumSquaresZero
 		// return 1 with probability 1-sumSquaresZero == sumSquaresOne
-		return (Math.random() < sumSquaresZero);
+		boolean result = Math.random() < sumSquaresZero;
+		// collapse the state via normalization
+		double sumSquaresResult = result ? sumSquaresOne : sumSquaresZero;
+		if (!QuantumUtil.isApproxZero(sumSquaresResult)) {
+			// avoided division by zero if we don't need to normalize!
+			// if measure 0, normalize all the amplitudes with a 0 at targetbit
+			//		and set all the amplitudes with a 1 at targetbit 
+			measureNormalize(targetbit, 0, result ? 1<<targetbit : 0, sumSquaresResult);
+			measureSetZero(targetbit, 0, result ? 0 : 1<<targetbit);
+		}
+		return result;
 	}
 	
-	// targetbit==1, bitnum==2, bitaddr==1 01
-	// sum the squares of each coefficient, holding targetbit constant and varying all other free bits
-	private double measureHelp(int targetbit, int bitnum, int bitaddr) {
+	/** Helper Recursive method through each bit, skipping the targetbit.
+	 * Sum the squares of each coefficient, holding targetbit constant and varying all other free bits
+	 * @param targetbit the bit to skip (hold constant)
+	 * @param bitnum the current bit considered; ranges 0 -> numbits-1
+	 * @param bitaddr the current address under construction
+	 * @return a probability equal to the sum of the squares of coefficients with targetbit held fixed
+	 */
+	private double measureGetSumSquares(final int targetbit, int bitnum, int bitaddr) {
 		if (bitnum == targetbit)
-			return measureHelp(targetbit, bitnum+1, bitaddr);
+			return measureGetSumSquares(targetbit, bitnum+1, bitaddr);
 		if (bitnum >= numbits)
 			return QuantumUtil.square( data.getEntry(bitaddr).abs() );
-		double tmp = measureHelp(targetbit, bitnum+1, bitaddr);
-		tmp += measureHelp(targetbit, bitnum+1, bitaddr | (1<<bitnum));
+		double tmp = measureGetSumSquares(targetbit, bitnum+1, bitaddr);
+		tmp += measureGetSumSquares(targetbit, bitnum+1, bitaddr | (1<<bitnum));
 		return tmp;
+	}
+	
+	/** divide the coefficients of each bit by norm,
+	 * holding targetbit constant and varying the other free bits
+	 * @param targetbit
+	 * @param bitnum
+	 * @param bitaddr
+	 * @param norm the amount to normalize by
+	 */
+	private void measureNormalize(final int targetbit, int bitnum, int bitaddr, final double norm) {
+		if (bitnum == targetbit)
+			measureNormalize(targetbit, bitnum+1, bitaddr, norm);
+		if (bitnum >= numbits)
+			data.setEntry(bitaddr, data.getEntry(bitaddr).divide(norm));
+		measureNormalize(targetbit, bitnum+1, bitaddr, norm);
+		measureNormalize(targetbit, bitnum+1, bitaddr | (1<<bitnum), norm);
+	}
+	
+	/** Set the coefficients of each bit to zero,
+	 * holding targetbit constant and varyign the other free bits */
+	private void measureSetZero(final int targetbit, int bitnum, int bitaddr) {
+		if (bitnum == targetbit)
+			measureSetZero(targetbit, bitnum+1, bitaddr);
+		if (bitnum >= numbits)
+			data.setEntry(bitaddr, Complex.ZERO);
+		measureSetZero(targetbit, bitnum+1, bitaddr);
+		measureSetZero(targetbit, bitnum+1, bitaddr | (1<<bitnum));
 	}
 	
 }
