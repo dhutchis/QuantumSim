@@ -57,6 +57,14 @@ public class QubitContainer {
 			throw new IllegalStateException("Qubit data does not have proper amplitudes (squares of amps sum to "+sumSquares+")");
 	}
 	
+	/**
+	 * Perform Operation on the targetbits in the order specified.
+	 * Call with either this.doOp(op, new int[] {3, 1});
+	 * 				or	this.doOp(op, 3, 1);
+	 * @param op
+	 * @param targetbits
+	 * @return
+	 */
 	public QubitContainer doOp(Operator op, int... targetbits) {
 		if (op == null || targetbits == null || targetbits.length > numbits 
 				|| op.getArity() != targetbits.length)
@@ -118,7 +126,34 @@ public class QubitContainer {
 		}
 	}
 
-	/* Todo: measurements
-	 * 
+	/**
+	 * Measure a single bit. Uses probability according to the amplitudes.
+	 * Collapses the container to a state with only the measured bit.
+	 * @param targetbit which bit to measure
+	 * @return boolean true for |1> and false for |0>
 	 */
+	public boolean measure(int targetbit) {
+		if (targetbit < 0 || targetbit >= numbits)
+			throw new IllegalArgumentException("bad target measurement bit: "+targetbit);
+		double sumSquaresZero = measureHelp(targetbit, 0, 0);
+		double sumSquaresOne = measureHelp(targetbit, 0, 1<<targetbit);
+		assert QuantumUtil.isApproxZero(sumSquaresZero + sumSquaresOne - 1); // sanity check
+		
+		// return 0 with probability sumSquaresZero
+		// return 1 with probability 1-sumSquaresZero == sumSquaresOne
+		return (Math.random() < sumSquaresZero);
+	}
+	
+	// targetbit==1, bitnum==2, bitaddr==1 01
+	// sum the squares of each coefficient, holding targetbit constant and varying all other free bits
+	private double measureHelp(int targetbit, int bitnum, int bitaddr) {
+		if (bitnum == targetbit)
+			return measureHelp(targetbit, bitnum+1, bitaddr);
+		if (bitnum >= numbits)
+			return QuantumUtil.square( data.getEntry(bitaddr).abs() );
+		double tmp = measureHelp(targetbit, bitnum+1, bitaddr);
+		tmp += measureHelp(targetbit, bitnum+1, bitaddr | (1<<bitnum));
+		return tmp;
+	}
+	
 }
