@@ -34,6 +34,21 @@ public class QubitContainer {
 	
 	public int getNumbits() { return numbits; }
 	
+	/** {|0>=_, |1>=_, |2>=_, |3>=_} */
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder("{");
+		Complex[] cdata = data.toArray();
+		assert cdata.length == 1<<numbits : "cdata.length="+cdata.length+" but 2^numbits="+(1<<numbits);
+		for (int i = 0; i < cdata.length; i++) {
+			sb.append("|"+i+">="+cdata[i]);
+			if (i != cdata.length-1)
+				sb.append(", ");
+		}
+		sb.append('}');
+		return sb.toString();
+	}
+	
 	/** Returns a copy of the data vector. */
 	public FieldVector<Complex> getAmps() {
 		return data.copy(); 

@@ -17,7 +17,7 @@ import qclib.util.QuantumUtil;
 
 public class QubitRegister {
 	/** Number of qubits in the quantum register */
-	private int numbits;
+	private int numqubits;
 	
 	/** Array index is qubit number; maps to the qubit position in a QubitContainer. */
 	private Pair<Integer,QubitContainer>[] qubitToQC;
@@ -27,15 +27,15 @@ public class QubitRegister {
 	/**
 	 * Initializes each qubit to state |0> inside separate qubit containers of size 1.
 	 * The qubit containers are dense.
-	 * @param numbits
+	 * @param numqubits
 	 */
 	@SuppressWarnings("unchecked")
-	public QubitRegister(int numbits) {
-		this.numbits = numbits;
-		qubitToQC = new Pair[numbits];
-		QCToQubit = new IdentityHashMap<QubitContainer,int[]>(numbits); // compare by object identity using ==
+	public QubitRegister(int numqubits) {
+		this.numqubits = numqubits;
+		qubitToQC = new Pair[numqubits];
+		QCToQubit = new IdentityHashMap<QubitContainer,int[]>(numqubits); // compare by object identity using ==
 		
-		for (int i=0; i<numbits; i++) {
+		for (int i=0; i<numqubits; i++) {
 			QubitContainer qc = new QubitContainer(1, false);
 			qubitToQC[i] = new Pair<Integer,QubitContainer>(0, qc);
 			QCToQubit.put(qc, new int[] {i});
@@ -44,16 +44,35 @@ public class QubitRegister {
 		
 	}
 	
-	public int getNumbits() { return numbits; }
+	public int getNumqubits() { return numqubits; }
+	
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder("qubitToQC (numqubits="+numqubits+")\n");
+		/*for (int i=0; i<numqubits; i++) {
+			
+		}*/
+		int i=0;
+		for (Map.Entry<QubitContainer, int[]> entry : QCToQubit.entrySet()) {
+			char QCchar = (char)('A'+i);
+			sb.append("\t"+ QCchar +"->{");
+			for (int q : entry.getValue())
+				sb.append(q+",");
+			sb.insert(sb.length()-1, '}');
+			sb.append(" "+QCchar+":"+entry.getKey()+'\n');
+			i++;
+		}
+		return sb.toString();
+	}
 	
 	/** Are all the qubits inside the same container? Also error checks arguments. */
 	private Set<QubitContainer> getContainersHolding(int... qubits) {
-		if (qubits == null || qubits.length == 0 || qubits[0] < 0 || qubits[0] >= numbits)
+		if (qubits == null || qubits.length == 0 || qubits[0] < 0 || qubits[0] >= numqubits)
 			throw new IllegalArgumentException("bad qubits");
 		
 		Set<QubitContainer> qcset = new HashSet<QubitContainer>(qubits.length); // max number of containers if each is in a separate one
 		for (int i = 0; i < qubits.length; i++) {
-			if (qubits[i] < 0 || qubits[i] >= numbits)
+			if (qubits[i] < 0 || qubits[i] >= numqubits)
 				throw new IllegalArgumentException("bad qubit: "+qubits[i]);
 			qcset.add(qubitToQC[qubits[i]].getSecond());
 		}
@@ -164,7 +183,7 @@ public class QubitRegister {
 	 * @return False for |0>, True for |1>
 	 */
 	public boolean measure(int targetbit) {
-		if (targetbit < 0 || targetbit >= numbits)
+		if (targetbit < 0 || targetbit >= numqubits)
 			throw new IllegalArgumentException("bad targetbit");
 		int bitInQC = qubitToQC[targetbit].getFirst();
 		QubitContainer qc = qubitToQC[targetbit].getSecond();
