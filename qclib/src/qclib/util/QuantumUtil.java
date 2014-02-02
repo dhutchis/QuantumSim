@@ -78,7 +78,7 @@ public class QuantumUtil {
 	
 	
 	
-	/**
+	/**<pre>
 	 * Translate indices on a vector v1 of length 2^v1loglen
 	 * 		to indices on a vector v2 of length 2^targetbits.length
 	 * 		where the indices on v2 correspond to the indices on v1 as specificed by targetbits.
@@ -97,7 +97,7 @@ public class QuantumUtil {
 	 * v1 = {000,001,010,011,100,101,110,111}, v1loglen = 3, targetbits = {0,2,1}, targetbits.length = 3
 	 * Returns: Set({000, 001, 100, 101, 010, 011, 110, 111})
 	 * Note: v1 and v2 have same sizes, but we reordered the indices
-	 * 
+	 * </pre>
 	 * @param v1loglen log2(length of v1)
 	 * @param targetbits the bits, in order, we want v2 to map to
 	 * @return Set of indices in the original v1
@@ -183,11 +183,24 @@ public class QuantumUtil {
 	 * @param indices
 	 * @param v1part
 	 */
-	public static void indexSet(final FieldVector<Complex> v1, final int[] indices, FieldVector<Complex> v1part) {
+	public static void indexSet(FieldVector<Complex> v1, final int[] indices, final FieldVector<Complex> v1part) {
 		if (v1part.getDimension() != indices.length)
 			throw new IllegalArgumentException("v1part.getDimension()="+v1part.getDimension()+", indices.length="+indices.length);
 		for (int i=0; i < indices.length; i++)
 			v1.setEntry(indices[i], v1part.getEntry(i));
+	}
+	
+	/**
+	 * Similar to indexSet(), but multiplies in the values of v1part into v1, in the places specified by indices.
+	 * @param v1 with some of the entries multiplied by those from v1part
+	 * @param indices
+	 * @param v1part
+	 */
+	public static void indexMultiplyIn(FieldVector<Complex> v1, final int[] indices, final FieldVector<Complex> v1part) {
+		if (v1part.getDimension() != indices.length)
+			throw new IllegalArgumentException("v1part.getDimension()="+v1part.getDimension()+", indices.length="+indices.length);
+		for (int i=0; i < indices.length; i++)
+			v1.setEntry( indices[i], v1.getEntry(indices[i]).multiply(v1part.getEntry(i)) );
 	}
 
 	/**
@@ -228,5 +241,14 @@ public class QuantumUtil {
 		return log2;
 	}
 	
+	/** Example: makeIntArrayStartEnd(3,5) returns {3, 4, 5, 6, 7} */
+	public static int[] makeIntArrayStartLen(int firstval, int len) {
+		if (len <= 0)
+			throw new IllegalArgumentException("bad len="+len);
+		int[] ret = new int[len];
+		for (int i=0; i<ret.length; i++)
+			ret[i] = firstval+i;
+		return ret;
+	}
 	
 }
