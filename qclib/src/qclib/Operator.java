@@ -58,66 +58,46 @@ public abstract class Operator {
 	
 	/**
 	 * Creates a log-k arity operator, where k is the number of unique values (bits) in opmap.
-	 * 		These values should cover [0, 1, ..., k-1] uniquely.
+	 * 		These values should be unique within [0, 1, ..., k-1].
+	 * Note: allowed to not cover some of the bits.  Assume the identity operator on those bits not specified.
 	 * Performs each operation in turn.  Since they occur on independent bits, the operations can be done in any order.
 	 * @param opmap
 	 * @return THe log-k arity combined Operator.
 	 */
-	public static Operator combineIndependentOps(final Map<Operator, Integer[]> opmap) {
+	public static Operator combineIndependentOps(final int logk, final Map<Operator, int[]> opmap) {
 		// error-checking: integers should be unique, cover 0..k-1
 		// turn off for performance
-		if (opmap == null || opmap.size() == 0)
-			throw new IllegalArgumentException("bad map: "+opmap);
-		SortedSet<Integer> intset = new TreeSet<Integer>(); // sorts the ints
-		for(Integer[] intarr : opmap.values()) {
-			for (Integer i : intarr) {
+		if (opmap == null || opmap.size() == 0 || logk <= 0)
+			throw new IllegalArgumentException("bad map: "+opmap+" or logk="+logk);
+
+		Set<Integer> intset = new HashSet<Integer>();
+		int k = 1<<logk;
+		for(int[] intarr : opmap.values()) {
+			for (int i : intarr) {
 				if (intset.contains(i))
 					throw new IllegalArgumentException("duplicate bit "+i+" specified in map: "+opmap);
 				intset.add(i);
+				if (i < 0 || i >= logk)
+					throw new IllegalArgumentException("bit "+i+" out of range as specified in map: "+opmap);
 			}
-		}		
-		if (intset.first() != 0)
-			throw new IllegalArgumentException("smallest bit specified in map is not 0: "+opmap);
-		int k = intset.last()+1;
-		if (!ArithmeticUtils.isPowerOfTwo(k))
-			throw new IllegalArgumentException("largest bit specified in map is not a power of 2: "+opmap);
+		}
 		
-		return new Operator(k) {
+		return new Operator(logk) {
 
 			@Override
 			public FieldVector<Complex> apply(FieldVector<Complex> invec) {
-				for (Entry<Operator,Integer[]> entry : opmap.entrySet()) {
+				// apply each operator in the map; order doesn't matter
+				// (no operation performed on bits not in map)
+				for (Entry<Operator,int[]> entry : opmap.entrySet()) {
 					Operator op = entry.getKey();
-					int[] intarg = QuantumUtil.integerToIntArray(entry.getValue());
-					//invec = QubitContainer.doOpStatic(op, invec, intarg);
-					// TODO!!!
-				}
-
-				
-				return null;
+					int[] intarg = entry.getValue();
+					
+					QuantumUtil.doOp(op, logk, invec, intarg); // modifies invec
+				}				
+				return invec;
 			}
 			
 		};
 	}
 	
-	/*public Operator combineIndependentOps(int[] mybits, Pair<Integer[],Operator>... otherops) {
-		// verify valid arguments
-		if (mybits == null || mybits.length != numbits)
-			throw new IllegalArgumentException("bad number of bits specified; must match arity "+numbits+" but actually given"+mybits.length);
-		//if (otherops == null)
-			//return this; // no other operators to tensor with - actually might swap argument bits
-		// build a map of integers to 
-		for (Pair<Integer[],Operator> pair : otherops) {
-			Integer[] otherbits = pair.getFirst();
-			Operator otherop = pair.getSecond();
-			// need all bits to be unique
-			if (otherbits.length != otherop.arity)
-				throw new IllegalArgumentException("bad number of bits specified for Operator "+otherop+"; must match arity "+otherop+" but actually given"+otherbits.length);
-			
-		}
-	}*/
-	
-	// idea for method: public Operator tensorUp(int[] mybits, Operator[] otherops, int[][] otherbits)
-	// combine two 1-arg Operators into a 2-arg Operator
-	// if bit not handled, then assume identity Operation on that bit
 }

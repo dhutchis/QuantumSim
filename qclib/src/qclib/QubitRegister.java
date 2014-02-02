@@ -30,7 +30,36 @@ public class QubitRegister {
 	
 	public int getNumbits() { return numbits; }
 	
-	// TODO make a couple method for combining QubitContainers
+	/** Are all the qubits inside the same container? Also error checks arguments. */
+	private boolean allSameContainer(int... qubits) {
+		if (qubits == null || qubits.length == 0 || qubits[0] < 0 || qubits[0] >= numbits)
+			throw new IllegalArgumentException("bad qubits");
+		
+		QubitContainer qc = regmap[qubits[0]].getSecond();
+		for (int i = 1; i < qubits.length; i++) {
+			if (qubits[i] < 0 || qubits[i] >= numbits)
+				throw new IllegalArgumentException("bad qubit: "+qubits[i]);
+			if (qc != regmap[qubits[i]].getSecond()) // compare for object identity
+				return false;
+		}
+		return true;
+	}
+	
+	/**
+	 * Combines qubits into a single, larger (dense) container. 
+	 * Note: if a qubit is in a container with an unspecified qubit, it needs to be included too
+	 * 		(unless they are unentangled -- future todo) 
+	 * Future: accept a BitSet argument, since the order does not matter
+	 * @param qubits The qubits to combine into a single QubitContainer of size qubits.length
+	 */
+	private void couple(int... qubits) {
+		// see if they are already part of the same container
+		if (allSameContainer(qubits))
+			return;
+		// at least one qubit is in a different container
+		QubitContainer qcnew = new QubitContainer(qubits.length, false); // dense
+		// TODO set the qubits in qcnew according to the qubits in the other containers
+	}
 	
 	// FAR FUTURE TODO make a decouple method for decoupling unentangled QubitContainers
 	// maybe make a method we can call on QubitContainers called isEntangled?

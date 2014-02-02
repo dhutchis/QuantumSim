@@ -1,5 +1,7 @@
 package qclib;
 
+import java.util.Set;
+
 import org.apache.commons.math3.complex.Complex;
 import org.apache.commons.math3.complex.ComplexField;
 import org.apache.commons.math3.linear.ArrayFieldVector;
@@ -59,7 +61,7 @@ public class QubitContainer {
 	}
 	
 	
-	/**
+	/*
 	 * Apply op to the target bits of invec and return a new (dense) vector, 
 	 * 		size = targetbits.length, with the results.
 	 * @param op
@@ -92,68 +94,18 @@ public class QubitContainer {
 	 * 				or	this.doOp(op, 3, 1);
 	 * @param op
 	 * @param targetbits
-	 * @return
+	 * @return this.  Allows for chaining: QubitContainer qc.doOp(H).doOp(Z).doOp(I)
 	 */
 	public QubitContainer doOp(Operator op, int... targetbits) {
 		if (op == null || targetbits == null || targetbits.length > numbits 
 				|| op.getArity() != targetbits.length)
 			throw new IllegalArgumentException("bad argument operator targetbits");
-		int targetbitmask = 0;
-		for (int tb : targetbits)
-			targetbitmask |= 1<<tb;
-		doOpFree(op, targetbits, 0, targetbitmask, 0);
+
+		QuantumUtil.doOp(op, numbits, this.data, targetbits);
 		return this;
 	}
 	
-	/*
-	 * The following code implements a recursive algorithm to fill the argument vector according to the 
-	 * bits specified in order via targetbits.  Todo: write lots of unit tests. 
-	 */
 	
-	/** Build freebitset */
-	private void doOpFree(Operator op, int[] targetbits, 
-			int bit, int targetbitmask, int freebitset) {
-		while (bit < numbits && ((1<<bit)&targetbitmask) != 0)
-			bit++;
-		if (bit >= numbits)
-			doOpTarget(op, targetbits, freebitset);
-		doOpFree(op, targetbits, bit+1, targetbitmask, freebitset);
-		doOpFree(op, targetbits, bit+1, targetbitmask, freebitset | (1<<bit));
-	}
-	
-	/** Given fixed configuration of free bits, transfer data from this register to vec, do op on vec to get new vec, and transfer data from vec back to this register */
-	private void doOpTarget(Operator op, int[] targetbits, int freebitset) {
-		FieldVector<Complex> vec = new ArrayFieldVector<Complex>(ComplexField.getInstance(),targetbits.length);
-		doOpTargetGet(targetbits, vec, freebitset, 0, 0);
-		vec = op.apply(vec);
-		doOpTargetSet(targetbits, vec, freebitset, 0, 0);
-	}
-	
-	/** Fills vec with the appropriate amps in order */
-	private void doOpTargetGet(int[] targetbits, FieldVector<Complex> vec, 
-			int origbitset, int vecidx, int vecbitset) {
-		if (vecidx == targetbits.length)
-			vec.setEntry(vecbitset, this.data.getEntry(origbitset));
-		else {
-			doOpTargetGet(targetbits, vec, origbitset, vecidx+1, vecbitset); // targetbits[targetidx]->0
-			origbitset |= 1<<targetbits[vecidx];
-			vecbitset |= 1<<vecidx;
-			doOpTargetGet(targetbits, vec, origbitset, vecidx+1, vecbitset); // targetbits[targetidx]->1
-		}
-	}
-	
-	/** Changes the qubit values to those in vec, using order of targetbits */
-	private void doOpTargetSet(int[] targetbits, FieldVector<Complex> vec, 
-			int origbitset, int vecidx, int vecbitset) {
-		if (vecidx == targetbits.length)
-			this.data.setEntry(vecbitset, vec.getEntry(origbitset));
-		else {
-			doOpTargetGet(targetbits, vec, origbitset, vecidx+1, vecbitset); // targetbits[targetidx]->0
-			origbitset |= 1<<targetbits[vecidx];
-			vecbitset |= 1<<vecidx;
-			doOpTargetGet(targetbits, vec, origbitset, vecidx+1, vecbitset); // targetbits[targetidx]->1
-		}
-	}
 	
 	/// ---------------------
 	/// MEASUREMENT FUNCTIONS
