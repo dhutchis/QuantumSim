@@ -67,7 +67,7 @@ public class QubitRegister {
 	 * Future: accept a BitSet argument, since the order does not matter
 	 * @param qubits The qubits to combine into a single QubitContainer of size qubits.length
 	 */
-	private void couple(int... qubits) {
+	void couple(int... qubits) {
 		// see if they are already part of the same container
 		Set<QubitContainer> qcset = getContainersHolding(qubits);
 		if (qcset.size() == 1)
@@ -82,7 +82,6 @@ public class QubitRegister {
 		// this is for the qubits that qcnew will map to
 		int[] qubitsForqcnew = new int[numBitsNew];
 		
-		// TODO set the qubits in qcnew according to the qubits in the other containers
 		// let's create the vector to set to the new QubitContainer
 		FieldVector<Complex> amps = new ArrayFieldVector<Complex>(ComplexField.getInstance(), 1<<numBitsNew); // dense
 		// initialize to all 1s
@@ -112,13 +111,99 @@ public class QubitRegister {
 		qcnew.setAmps(amps);
 	}
 	
-	// FAR FUTURE TODO make a decouple method for decoupling unentangled QubitContainers
+	// FUTURE TODO make a decouple method for decoupling unentangled QubitContainers
 	// maybe make a method we can call on QubitContainers called isEntangled?
 	// but need to distinguish which bits are entangled and which are not.
 	
+	/**
+	 * Naive implementation of setting amplitudes of qubits in the register.
+	 * Cases:
+	 * 1) Want to set n qubits, all n are in the same container.  OK!  Just match the order of the qubits to the order of the container.
+	 * 2) Want to set n qubits, which are located in different containers, and there are no other qubits in those containers.
+	 * 	  OK!  Couple the qubits and set the new container containing all the qubits to the provided amps.
+	 * 3) Want to set n qubits, which are located in different containers, and there are other qubits in those containers.
+	 * 	  Oh noes!  How do we handle the other qubits?  Just fail for now and work out a strategy later.
+	 * @param amps vector of length 2^(qubits.length)
+	 * @param qubits
+	 * @return this.  Useful for chaining: QubitRegister qr.setAmps(amps1, {3}).setAmps(amps2, {1}).setAmps(...
+	 */
 	public QubitRegister setAmps(FieldVector<Complex> amps, int... qubits) {
-		// TODO
+		Set<QubitContainer> conts = getContainersHolding(qubits);
+		if (conts.size() == 1) {
+			// case 1)
+			QubitContainer qc = conts.iterator().next();
+			if (qubits.length != qc.getNumbits()) // need to specify all the qubits in the container
+				throw new IllegalArgumentException("provided "+qubits.length+" qubits but they are in a container of size "+qc.getNumbits());
+			
+			int[] targetbits = new int[qubits.length];
+			for (int i=0; i<qubits.length; i++) {
+				targetbits[i] = qubitToQC[i].getFirst();
+				assert qubitToQC[i].getSecond() == qc;
+			}
+			
+			Set<int[]> idxset = QuantumUtil.translateIndices(qubits.length, targetbits);
+			assert idxset.size() == 1;
+			int[] indices = idxset.iterator().next();
+			
+			FieldVector<Complex> reorderedAmps = new ArrayFieldVector<Complex>(ComplexField.getInstance(), 1<<qubits.length);
+			QuantumUtil.indexSet(reorderedAmps, indices, amps);
+			
+			qc.setAmps(reorderedAmps);
+			
+		} else {
+			// case 2 or 3
+			throw new UnsupportedOperationException("todo; "+conts.size()+" containers affected");
+			// TODO
+		}
+		return this;
+	}
+	
+	/**
+	 * Measure a qubit. Collapses the qubit state afterward.
+	 * @param targetbit which bit to measure
+	 * @return False for |0>, True for |1>
+	 */
+	public boolean measure(int targetbit) {
+		if (targetbit < 0 || targetbit >= numbits)
+			throw new IllegalArgumentException("bad targetbit");
+		int bitInQC = qubitToQC[targetbit].getFirst();
+		QubitContainer qc = qubitToQC[targetbit].getSecond();
+		return qc.measure(bitInQC);
+		// decouple afterward?
+	}
+	
+	/**
+	 * Perform an Operation on the specified qubits.  If they are not coupled, couple them.  
+	 * If they are coupled with other elements, just couple everything together.
+	 * @param op
+	 * @param qubits
+	 * @return this.  Useful for chaining: QubitRegsiter qr.setAmps(amps1, {2}).doOp(H,2).doOp(Z,2).doOp(...
+	 */
+	public QubitRegister doOp(Operator op, int... qubits) {
+		/*Set<QubitContainer> conts = getContainersHolding(qubits);
+		if (conts.size() > 1) {
+			// need to do some coupling
+			// first check to see if there are other qubits involved.  If so, panic.
+			BitSet qubitset = new BitSet(numbits); // sorta slow; change later
+			for (int q : qubits)
+				qubitset.set(q);
+			for (QubitContainer qc : conts)
+				for (int q : QCToQubit.get(qc))
+					if (!qubitset.get(q))
+						throw new UnsupportedOperationException("coupled with other qubit "+q+"; didn't handle that yet");
+			// OK, can safely couple and do the op
+			this.couple(qubits);
+		}*/
 		
+		// Change of plans: just couple everything together and do the op, perhaps on a bigger container than necessary
+		couple(qubits); // no effect if already coupled
+		QubitContainer qc = qubitToQC[qubits[0]].getSecond();
+		int[] targetbits = new int[qubits.length];
+		for (int i = 0; i < qubits.length; i++) {
+			targetbits[i] = qubitToQC[qubits[i]].getFirst();
+			assert qubitToQC[qubits[i]].getSecond() == qc;
+		}
+		qc.doOp(op, targetbits);
 		return this;
 	}
 	
