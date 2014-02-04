@@ -2,6 +2,7 @@ package qclib.util;
 
 import java.util.BitSet;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.math3.complex.Complex;
@@ -11,7 +12,7 @@ import org.apache.commons.math3.linear.FieldVector;
 
 import qclib.Operator;
 
-public class QuantumUtil {
+public final class QuantumUtil {
 	
 	/** Tolerance for double equality checking */
 	public final static double EPSILON = 0.00001;
@@ -19,16 +20,16 @@ public class QuantumUtil {
 		return arg < EPSILON && arg > -EPSILON;
 	}
 	
-	public final static double square(double a) { return a*a; }
+	public static double square(double a) { return a*a; }
 
-	public final static int[] integerToIntArray(Integer[] in) {
+	public static int[] integerToIntArray(Integer[] in) {
 		int[] ret = new int[in.length];
 		for (int i=0; i<in.length; i++)
 			ret[i] = in[i];
 		return ret;
 	}
 	
-	public final static boolean isApproxEqualComplex(Complex x, Complex y) {
+	public static boolean isApproxEqualComplex(Complex x, Complex y) {
 		return isApproxZero(x.getReal()-y.getReal()) &&
 				isApproxZero(x.getImaginary()-y.getImaginary());
 	}
@@ -96,7 +97,10 @@ public class QuantumUtil {
 	 * 
 	 * v1 = {000,001,010,011,100,101,110,111}, v1loglen = 3, targetbits = {0,2,1}, targetbits.length = 3
 	 * Returns: Set({000, 001, 100, 101, 010, 011, 110, 111})
-	 * Note: v1 and v2 have same sizes, but we reordered the indices
+	 * Note: v1 and v2 have same sizes, but we reordered the indices.
+	 * 
+	 * 
+	 * 
 	 * </pre>
 	 * @param v1loglen log2(length of v1)
 	 * @param targetbits the bits, in order, we want v2 to map to
@@ -230,7 +234,7 @@ public class QuantumUtil {
 	}
 	
 	/** log base 2 of a positive number */
-	public static final int log2(int num) {
+	public static int log2(int num) {
 		if (num <= 0)
 			throw new IllegalArgumentException("num "+num+" should be >= 0");
 		int log2 = -1;
@@ -241,14 +245,21 @@ public class QuantumUtil {
 		return log2;
 	}
 	
-	/** Example: makeIntArrayStartEnd(3,5) returns {3, 4, 5, 6, 7} */
-	public static int[] makeIntArrayStartLen(int firstval, int len) {
+	/** Example: makeConsecutiveIntArray(3,5) returns {3, 4, 5, 6, 7} */
+	public static int[] makeConsecutiveIntArray(int firstval, int len) {
 		if (len <= 0)
 			throw new IllegalArgumentException("bad len="+len);
 		int[] ret = new int[len];
 		for (int i=0; i<ret.length; i++)
 			ret[i] = firstval+i;
 		return ret;
+	}
+	
+	public static Set<Integer> intArrayToSet(int[] arr) {
+		Set<Integer> s = new HashSet<Integer>();
+		for (int i : arr)
+			s.add(i);
+		return s;
 	}
 	
 }

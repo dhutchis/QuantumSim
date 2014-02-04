@@ -12,7 +12,7 @@ import org.apache.commons.math3.util.ArithmeticUtils;
 import qclib.util.QuantumUtil;
 
 /**
- * todo: implement hashcode, equals methods
+ * 
  *
  */
 @SuppressWarnings("deprecation")

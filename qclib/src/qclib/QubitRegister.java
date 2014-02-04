@@ -1,5 +1,6 @@
 package qclib;
 
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -109,7 +110,7 @@ public class QubitRegister {
 		int qcnewidx = 0;
 		for (QubitContainer qc : qcset) {
 			int[] qubitsTransferring = QCToQubit.get(qc);
-			int[] qcnewidxarr = QuantumUtil.makeIntArrayStartLen(qcnewidx, qubitsTransferring.length);
+			int[] qcnewidxarr = QuantumUtil.makeConsecutiveIntArray(qcnewidx, qubitsTransferring.length);
 			
 			for (int[] indices : QuantumUtil.translateIndices(numBitsNew, qcnewidxarr)) {
 				QuantumUtil.indexMultiplyIn(amps, indices, qc.getAmps());	
@@ -148,32 +149,45 @@ public class QubitRegister {
 	 */
 	public QubitRegister setAmps(FieldVector<Complex> amps, int... qubits) {
 		Set<QubitContainer> conts = getContainersHolding(qubits);
+		QubitContainer qcTarget; // the SINGLE container whose amplitudes we will set 
 		if (conts.size() == 1) {
 			// case 1)
-			QubitContainer qc = conts.iterator().next();
-			if (qubits.length != qc.getNumbits()) // need to specify all the qubits in the container
-				throw new IllegalArgumentException("provided "+qubits.length+" qubits but they are in a container of size "+qc.getNumbits());
-			
-			int[] targetbits = new int[qubits.length];
-			for (int i=0; i<qubits.length; i++) {
-				targetbits[i] = qubitToQC[i].getFirst();
-				assert qubitToQC[i].getSecond() == qc;
-			}
-			
-			Set<int[]> idxset = QuantumUtil.translateIndices(qubits.length, targetbits);
-			assert idxset.size() == 1;
-			int[] indices = idxset.iterator().next();
-			
-			FieldVector<Complex> reorderedAmps = new ArrayFieldVector<Complex>(ComplexField.getInstance(), 1<<qubits.length);
-			QuantumUtil.indexSet(reorderedAmps, indices, amps);
-			
-			qc.setAmps(reorderedAmps);
-			
+			qcTarget = conts.iterator().next();
 		} else {
-			// case 2 or 3
-			throw new UnsupportedOperationException("todo; "+conts.size()+" containers affected");
-			// TODO
+			// check for case 2
+			Set<Integer> qubitsSet = QuantumUtil.intArrayToSet(qubits);
+			for (QubitContainer qc : conts) {
+				for (int qInCont : QCToQubit.get(qc))
+					if (!qubitsSet.contains(qInCont))  
+						throw new IllegalStateException("case 3 not supported; qubit "+qInCont+" is not a target of setAmps but is in a container with another target. qubits="+qubitsSet);
+			}
+			// we have case 2 -- couple the containers together and set them, adjusting the indices
+			this.couple(qubits);
+			
+			conts = getContainersHolding(qubits);
+			assert conts.size() == 1;
+			qcTarget = conts.iterator().next();
 		}
+		
+		if (qubits.length != qcTarget.getNumbits()) // need to specify all the qubits in the container
+			throw new IllegalArgumentException("provided "+qubits.length+" qubits but they are in a container of size "+qcTarget.getNumbits());
+		
+		int[] targetbits = new int[qubits.length];
+		for (int i=0; i<qubits.length; i++) {
+			targetbits[i] = qubitToQC[i].getFirst(); // the position of qubit[i] in qcTarget
+			assert qubitToQC[i].getSecond() == qcTarget;
+		}
+		
+		// translate from indices on qubits in the QR to indices on qubits in the QC
+		Set<int[]> idxset = QuantumUtil.translateIndices(qubits.length, targetbits);
+		assert idxset.size() == 1;
+		int[] indices = idxset.iterator().next();
+		
+		FieldVector<Complex> reorderedAmps = new ArrayFieldVector<Complex>(ComplexField.getInstance(), 1<<qubits.length);
+		QuantumUtil.indexSet(reorderedAmps, indices, amps);
+		
+		qcTarget.setAmps(reorderedAmps);
+		
 		return this;
 	}
 	
@@ -189,6 +203,20 @@ public class QubitRegister {
 		QubitContainer qc = qubitToQC[targetbit].getSecond();
 		return qc.measure(bitInQC);
 		// decouple afterward?
+	}
+	
+	/**
+	 * Measure qubits in the order provided.  Collapses the qubit state after each measurement.
+	 * @param targetbits bits to measure, in order
+	 * @return boolean results, with order matching input
+	 */
+	public boolean[] measure(int... targetbits) {
+		if (targetbits == null)
+			throw new IllegalArgumentException("please no null's");
+		boolean[] ret = new boolean[targetbits.length];
+		for (int i=0; i < targetbits.length; i++)
+			ret[i] = measure(targetbits[i]);
+		return ret;
 	}
 	
 	/**
