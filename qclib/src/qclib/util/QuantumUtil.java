@@ -10,6 +10,7 @@ import org.apache.commons.math3.complex.Complex;
 import org.apache.commons.math3.complex.ComplexField;
 import org.apache.commons.math3.linear.ArrayFieldVector;
 import org.apache.commons.math3.linear.FieldVector;
+import org.apache.commons.math3.linear.SparseFieldVector;
 
 import qclib.Operator;
 
@@ -40,6 +41,31 @@ public final class QuantumUtil {
 	public static boolean isApproxEqualComplex(Complex x, Complex y) {
 		return isApproxZero(x.getReal()-y.getReal()) &&
 				isApproxZero(x.getImaginary()-y.getImaginary());
+	}
+	
+	/** True if all the elements of the vectors are approximately equal (EPSILON tolerance) */
+	public static boolean isApproxEqualVector(FieldVector<Complex> v1, FieldVector<Complex> v2) {
+		if (v1 == v2)
+			return true;
+		if (v1 == null || v2 == null)
+			return false;
+		Complex[] a1 = v1.toArray(), a2 = v2.toArray();
+		if (a1.length != a2.length)
+			return false;
+		for (int i=0; i<a1.length; i++)
+			if (!isApproxEqualComplex(a1[i], a2[i]))
+				return false;
+		return true;
+	}
+	
+	/** make a vector out of Complex numbers */
+	public static FieldVector<Complex> buildVector(Complex... carr) {
+		if (carr == null || carr.length == 0)
+			throw new IllegalArgumentException("no null's or length 0 arguments please");
+		FieldVector<Complex> v = new ArrayFieldVector<Complex>(ComplexField.getInstance(), carr.length);
+		for (int i=0; i<carr.length; i++)
+			v.setEntry(i, carr[i]);
+		return v;
 	}
 	
 	
