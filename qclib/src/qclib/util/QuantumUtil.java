@@ -78,6 +78,13 @@ public final class QuantumUtil {
 		return v;
 	}
 	
+	public static String printVector(FieldVector<Complex> v) {
+		StringBuilder sb = new StringBuilder("<");
+		for (Complex c : v.toArray())
+			sb.append(c.toString()).append(",");
+		sb.replace(sb.length()-1, sb.length(), ">");
+		return sb.toString();
+	}
 	
 	/// ---------------
 	/// Index Functions
@@ -268,11 +275,11 @@ public final class QuantumUtil {
 	public static void doOp(Operator op, int datavecloglength, FieldVector<Complex> datavec, int... targetbits) {
 		if (targetbits == null || datavec == null || op == null || targetbits.length > datavecloglength)
 			throw new IllegalArgumentException("bad arguments to QuantumUtil.doOp");
-		if (datavecloglength != datavec.getDimension())
+		if (1<<datavecloglength != datavec.getDimension())
 			System.err.println("Warning: datavecloglength="+datavecloglength+", datavec.getDimension()="+datavec.getDimension());
 		
 		// vector to hold the amplitudes to pass to the operator
-		FieldVector<Complex> vec = new ArrayFieldVector<Complex>(ComplexField.getInstance(),targetbits.length);
+		FieldVector<Complex> vec = new ArrayFieldVector<Complex>(ComplexField.getInstance(),1<<targetbits.length);
 		// map indices in this.data to indices in vec, in order specified by targetbits
 		Set<int[]> indexset = QuantumUtil.translateIndices(datavecloglength, targetbits);
 		// for each set of indices indexing into this.data

@@ -13,6 +13,7 @@ public class CNOT extends Operator {
 	 *     a|00> + b|01> + c|10> + d|11>
 	 * ==> a|00> + b|01> + d|10> + c|11>
 	 * Creates new vector; does not change original.
+	 * First bit is target bit; second bit is control bit.
 	 */
 	@Override
 	public FieldVector<Complex> apply(FieldVector<Complex> invec) {
