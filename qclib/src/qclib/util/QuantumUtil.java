@@ -1,6 +1,7 @@
 package qclib.util;
 
 import java.util.BitSet;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -24,6 +25,13 @@ public final class QuantumUtil {
 
 	public static int[] integerToIntArray(Integer[] in) {
 		int[] ret = new int[in.length];
+		for (int i=0; i<in.length; i++)
+			ret[i] = in[i];
+		return ret;
+	}
+	
+	public static Integer[] intToIntegerArray(int[] in) {
+		Integer[] ret = new Integer[in.length];
 		for (int i=0; i<in.length; i++)
 			ret[i] = in[i];
 		return ret;
@@ -70,9 +78,9 @@ public final class QuantumUtil {
 			ret.add( callback.doWithFreeBitsSet(freebits) );
 			return;
 		}
-		doForEachFreeBitSet_Help(freebitmask, callback, ret, idxAt, freebits); // recurse with a 0 at freebit idxAt
+		doForEachFreeBitSet_Help(freebitmask, callback, ret, idxAt+1, freebits); // recurse with a 0 at freebit idxAt
 		freebits.set(idxAt);
-		doForEachFreeBitSet_Help(freebitmask, callback, ret, idxAt, freebits); // recurse with a 1 at freebit idxAt
+		doForEachFreeBitSet_Help(freebitmask, callback, ret, idxAt+1, freebits); // recurse with a 1 at freebit idxAt
 		freebits.clear(idxAt);
 		return;
 	}
@@ -107,8 +115,13 @@ public final class QuantumUtil {
 	 * @return Set of indices in the original v1
 	 */
 	public static Set<int[]> translateIndices(int v1loglen, final int... targetbits) {
-		if (v1loglen < 2 || targetbits == null || targetbits.length > v1loglen)
+		if (v1loglen < 1 || targetbits == null || targetbits.length > v1loglen)
 			throw new IllegalArgumentException("bad v1loglen="+v1loglen+", targetbits "+targetbits+(targetbits==null?"":" with length "+targetbits));
+		if (v1loglen == 1)
+			if (targetbits[0] == 0)
+				return Collections.singleton(new int[] {0}); // degenerate case
+			else 
+				throw new IllegalArgumentException("bad v1loglen="+v1loglen+", targetbits "+targetbits+(targetbits==null?"":" with length "+targetbits));
 
 		// running example: v1 = {000,001,010,011,100,101,110,111}, v1loglen = 3, targetbits = {2,0}, targetbits.length = 2
 		//int[][] ret = new int[1<<(v1loglen-targetbits.length)][1<<(targetbits.length)];
@@ -117,7 +130,7 @@ public final class QuantumUtil {
 		// expected result:	{{000, 100, 001, 101},
 		//					 {010, 110, 011, 111}} // order of the two arrays doesn't matter
 		final BitSet freebitmask = new BitSet(v1loglen);
-		freebitmask.set(0, v1loglen-1);
+		freebitmask.set(0, v1loglen);
 		// freebitmask starts at 111
 		// now change it to 010, since bit 1 is free and bits 2, 0 are fixed, meaning not specified in targetbits
 		for (int tb : targetbits) {
@@ -134,11 +147,13 @@ public final class QuantumUtil {
 				
 				// turn freebitset into an int -- later TODO change everything to work with BitSets
 				// init each element of arr to have the free bits set  
-				long[] freebits = freebitmask.toLongArray();
-				assert freebits.length==1 : "using more than 64 bits not currently supported";
-				assert freebits[0] >>> 32 == 0 : "using more than 32 bits not currently supported";
-				for (int i=0; i < targetbits.length; i++)
-					arr[i] = (int)freebits[0];
+				long[] freebits = freebitset.toLongArray();
+				assert freebits.length<=1 : "using more than 64 bits not currently supported";
+				if (freebits.length == 1) { // if the length is 0, then initialize arr to all 0s (the default)
+					assert freebits[0] >>> 32 == 0 : "using more than 32 bits not currently supported";
+					for (int i=0; i < arr.length; i++)
+						arr[i] = (int)freebits[0];
+				}
 				
 				// now change the elements of arr to conform to the targetbits
 				for (int i = 0; i < targetbits.length; i++) {
