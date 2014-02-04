@@ -12,6 +12,10 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.commons.math3.complex.Complex;
+import org.apache.commons.math3.complex.ComplexField;
+import org.apache.commons.math3.linear.ArrayFieldVector;
+import org.apache.commons.math3.linear.FieldVector;
 import org.junit.Test;
 
 /**
@@ -145,7 +149,48 @@ public class QuantumUtilTest {
 	 */
 	@Test
 	public final void testIndexGet() {
-		fail("Not yet implemented"); // TODO
+		FieldVector<Complex> v1 = QuantumUtil.buildVector(0b000, 0b001, 0b010, 0b011, 0b100, 0b101, 0b110, 0b111);
+		FieldVector<Complex> v1expected = v1.copy();
+		FieldVector<Complex> v2 = new ArrayFieldVector<Complex>(ComplexField.getInstance(), 8);
+		FieldVector<Complex> v2expected = QuantumUtil.buildVector(0b000, 0b100, 0b001, 0b101, 0b010, 0b110, 0b011, 0b111);
+		int[] targetbits = new int[] {2, 0, 1};
+		
+		Set<int[]> indset = QuantumUtil.translateIndices(3, targetbits);
+		assertTrue( indset.size() == 1 );
+		int[] indices = indset.iterator().next();
+		assertArrayEquals(new int[] {0,4,1,5,2,6,3,7}, indices);
+		QuantumUtil.indexGet(v1, indices, v2); 
+		
+		assertTrue( v1.equals(v1expected) );
+		assertTrue( v2.equals(v2expected) );
+		
+		// test #2 -------------------------------------------------------
+		
+		v2 = new ArrayFieldVector<Complex>(ComplexField.getInstance(), 4);
+		targetbits = new int[] {1, 2};
+		
+		indset = QuantumUtil.translateIndices(3, targetbits);
+		assertTrue( indset.size() == 2 );
+		
+		Set<int[]> expectedIndices = new HashSet<int[]>(Arrays.asList(
+				new int[] {1,3,5,7},
+				new int[] {0,2,4,6}
+		));
+		assertTrue(isEqualSetOfIntArray(expectedIndices, indset));
+		
+		Set<FieldVector<Complex>> expectedVectors = new HashSet<FieldVector<Complex>>(Arrays.asList(
+				QuantumUtil.buildVector(0b000, 0b010, 0b100, 0b110),
+				QuantumUtil.buildVector(0b001, 0b011, 0b101, 0b111)
+		));
+		
+		for (int[] ind : indset) {
+			
+			System.err.println(BitSetUtil.printIntArray(ind));
+			QuantumUtil.indexGet(v1, ind, v2); 
+			
+			assertTrue( v1.equals(v1expected) );
+			assertTrue( expectedVectors.contains(v2) );
+		}
 	}
 
 	/**

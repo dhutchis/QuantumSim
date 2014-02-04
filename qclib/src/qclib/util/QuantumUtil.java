@@ -68,6 +68,16 @@ public final class QuantumUtil {
 		return v;
 	}
 	
+	/** Shortcut for building a vector out of all real components */
+	public static FieldVector<Complex> buildVector(double... carr) {
+		if (carr == null || carr.length == 0)
+			throw new IllegalArgumentException("no null's or length 0 arguments please");
+		FieldVector<Complex> v = new ArrayFieldVector<Complex>(ComplexField.getInstance(), carr.length);
+		for (int i=0; i<carr.length; i++)
+			v.setEntry(i, new Complex(carr[i]));
+		return v;
+	}
+	
 	
 	/// ---------------
 	/// Index Functions
