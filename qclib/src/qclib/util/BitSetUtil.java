@@ -128,6 +128,15 @@ public class BitSetUtil {
 		sb.replace(sb.length()-1, sb.length(), "}");
 		return sb.toString();
 	}
+	public static String printIntArray(Integer[] arr) {
+		if (arr == null)
+			return "null";
+		StringBuilder sb = new StringBuilder("{");
+		for (int i : arr) 
+			sb.append(i).append(',');
+		sb.replace(sb.length()-1, sb.length(), "}");
+		return sb.toString();
+	}
 	
 //	
 //	/** Iterates over the singe int's inside the list of single bits. */
