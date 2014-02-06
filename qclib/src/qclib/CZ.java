@@ -3,6 +3,11 @@ package qclib;
 import org.apache.commons.math3.complex.Complex;
 import org.apache.commons.math3.linear.FieldVector;
 
+/**
+ * 
+ * @author dhutchis
+ *
+ */
 public class CZ extends Operator {
 
 	public CZ() {
@@ -10,10 +15,13 @@ public class CZ extends Operator {
 	}
 
 	/**
+	 * <pre>
 	 *     a|00> + b|01> + c|10> + d|11>
 	 * ==> a|00> + b|01> + c|10> - d|11>
+	 * </pre>
 	 * Creates new vector; does not change original.
 	 * First bit is target bit; second bit is control bit.
+	 * Todo: FIX ME
 	 */
 	@Override
 	public FieldVector<Complex> apply(FieldVector<Complex> invec) {

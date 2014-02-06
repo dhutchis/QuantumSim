@@ -171,6 +171,37 @@ public abstract class Operator {
 	}
 	
 	/**
+	 * Extend this operator on n-qubits to an m-qubit operator, m >= n.
+	 * @param extendedArity m
+	 * @param targetbits which bits among {0,1,...,m-1} to pass to bits {0,1,...,n-1} of op.
+	 */
+	public Operator extendOperator(final int extendedArity, final int... targetbits) {
+		checkSetUniquelyK(false, extendedArity, targetbits);
+		if (targetbits.length != arity)
+			throw new IllegalArgumentException("targetbits should have the same length as arity");
+		
+		// TODO: test this class
+		// This method generalizes swapBits( ).  Combine the two.
+		
+		final Set<int[]> transet = QuantumUtil.translateIndices(extendedArity, targetbits);
+		final Operator outside = this;
+		
+		return new Operator(arity) {
+			@Override
+			public FieldVector<Complex> apply(FieldVector<Complex> invec) {
+				// TODO check this: for loop through the appropriate indices
+				FieldVector<Complex> remappedVec = new ArrayFieldVector<Complex>(ComplexField.getInstance(), 1<<extendedArity);
+				for (int[] indices : transet) {
+					QuantumUtil.indexGet(invec, indices, remappedVec);
+					remappedVec = outside.apply(remappedVec);
+					QuantumUtil.indexSet(invec, indices, remappedVec);
+				}
+				return invec;
+			}
+		};
+	}
+	
+	/**
 	 * Creates a log-k arity operator, where k is the number of unique values (bits) in opmap.
 	 * 		These values should be unique within [0, 1, ..., k-1].
 	 * *Note: allowed to not cover some of the bits.  Assume the identity operator on those bits not specified.
