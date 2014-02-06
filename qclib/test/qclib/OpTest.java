@@ -18,7 +18,8 @@ public class OpTest {
 				c1 = new Complex(Math.sqrt(0.75),0);
 		FieldVector<Complex> vec = QuantumUtil.buildVector(c0, c1);
 		FieldVector<Complex> outvec = new Z().apply(vec);
-		assertTrue( QuantumUtil.isApproxEqualVector(outvec, vec)  );
+		FieldVector<Complex> testvec = QuantumUtil.buildVector(c0, c1.negate());
+		assertTrue( QuantumUtil.isApproxEqualVector(outvec, testvec)  );
 	}
 	
 	@Test
@@ -29,7 +30,18 @@ public class OpTest {
 				c3 = new Complex(0,Math.sqrt(5/18.0));
 		FieldVector<Complex> vec = QuantumUtil.buildVector(c0, c1, c2, c3);;
 		FieldVector<Complex> outvec = new CNOT().apply(vec);
-		assertTrue( QuantumUtil.isApproxEqualVector(outvec, vec)  );
+		FieldVector<Complex> testvec = QuantumUtil.buildVector(c0, c1, c3, c2);
+		assertTrue( QuantumUtil.isApproxEqualVector(outvec, testvec)  );
+	}
+	
+	@Test
+	public void testH() {
+		Complex c0 = new Complex(1,3),
+				c1 = new Complex(Math.sqrt(1/6.0),1);
+		FieldVector<Complex> vec = QuantumUtil.buildVector(c0, c1);;
+		FieldVector<Complex> outvec = new H().apply(vec);
+		FieldVector<Complex> testvec = QuantumUtil.buildVector((c0.add(c1)).divide(Math.sqrt(2)), (c0.subtract(c1)).divide(Math.sqrt(2)));
+		assertTrue( QuantumUtil.isApproxEqualVector(outvec, testvec)  );
 	}
 
 }
