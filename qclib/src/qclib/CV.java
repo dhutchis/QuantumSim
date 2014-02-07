@@ -5,6 +5,9 @@ import org.apache.commons.math3.linear.FieldVector;
 
 public class CV extends Operator {
 
+	/**
+	 *  First bit is the control bit, the second is the target bit.
+	 */
 	public CV() {
 		super(2);
 	}
