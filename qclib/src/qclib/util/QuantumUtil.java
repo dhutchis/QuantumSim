@@ -3,16 +3,12 @@ package qclib.util;
 import java.util.BitSet;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.math3.complex.Complex;
 import org.apache.commons.math3.complex.ComplexField;
 import org.apache.commons.math3.linear.ArrayFieldVector;
 import org.apache.commons.math3.linear.FieldVector;
-import org.apache.commons.math3.linear.SparseFieldVector;
-
-import qclib.Operator;
 
 public final class QuantumUtil {
 	
@@ -265,32 +261,6 @@ public final class QuantumUtil {
 			v1.setEntry( indices[i], v1.getEntry(indices[i]).multiply(v1part.getEntry(i)) );
 	}
 
-	/**
-	 * Performs the Operator on given datavec and stores the result in datavec.
-	 * Length of datavec is 2^datavecloglength
-	 * @param op
-	 * @param data
-	 * @param targetbits
-	 */
-	public static void doOp(Operator op, int datavecloglength, FieldVector<Complex> datavec, int... targetbits) {
-		if (targetbits == null || datavec == null || op == null || targetbits.length > datavecloglength)
-			throw new IllegalArgumentException("bad arguments to QuantumUtil.doOp");
-		if (1<<datavecloglength != datavec.getDimension())
-			System.err.println("Warning: datavecloglength="+datavecloglength+", datavec.getDimension()="+datavec.getDimension());
-		
-		// vector to hold the amplitudes to pass to the operator
-		FieldVector<Complex> vec = new ArrayFieldVector<Complex>(ComplexField.getInstance(),1<<targetbits.length);
-		// map indices in this.data to indices in vec, in order specified by targetbits
-		Set<int[]> indexset = QuantumUtil.translateIndices(datavecloglength, targetbits);
-		// for each set of indices indexing into this.data
-		for (int[] indices : indexset) {
-			// get the amplitudes from this.data into vec, do the operator on vec to get a new vec, and set the new amplitudes from vec into this.data 
-			QuantumUtil.indexGet(datavec, indices, vec);
-			vec = op.apply(vec);
-			QuantumUtil.indexSet(datavec, indices, vec);
-		}
-	}
-	
 	/** log base 2 of a positive number */
 	public static int log2(int num) {
 		if (num <= 0)

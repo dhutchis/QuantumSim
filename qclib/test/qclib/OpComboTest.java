@@ -3,20 +3,21 @@
  */
 package qclib;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.commons.math3.complex.Complex;
 import org.apache.commons.math3.linear.FieldVector;
 import org.junit.Test;
 
+import qclib.op.CNOT;
+import qclib.op.CV;
+import qclib.op.H;
+import qclib.op.Z;
 import qclib.util.QuantumUtil;
 
 /**
@@ -66,7 +67,7 @@ public class OpComboTest {
 		tbs[4] = new int[] {0,1};
 		
 		for (int t=0; t<numtests; t++) {
-			QuantumUtil.doOp(o[t], dvll[t], v[t], tbs[t]);
+			o[t].applyTo(dvll[t], v[t], tbs[t]);
 			assertTrue("testcase["+t+"]:\nresult ="+QuantumUtil.printVector(v[t])+"\nexpected="+QuantumUtil.printVector(ve[t]),
 					QuantumUtil.isApproxEqualVector(v[t], ve[t]) );
 		}
@@ -87,7 +88,7 @@ public class OpComboTest {
 		v1 = QuantumUtil.buildVector(10,11,12,13);
 		//							 10,-11,12,-13 // after Z on bit 0
 		v1e = QuantumUtil.buildVector(10,-11,-12,13); // after Z on bit 1
-		QuantumUtil.doOp(zz, 2, v1, new int[] {1,0});
+		zz.applyTo(2, v1, new int[] {1,0});
 
 		assertTrue("result ="+QuantumUtil.printVector(v1)+"\nexpected="+QuantumUtil.printVector(v1e),
 				QuantumUtil.isApproxEqualVector(v1e, v1) );
@@ -101,7 +102,7 @@ public class OpComboTest {
 		
 		QubitRegister qr = new QubitRegister(3);
 		qr.doOp(h, 2).doOp(cv, 1, 2).doOp(cvConj, 0, 2).doOp(cv, 1, 2).doOp(h, 2);
-		boolean measurement = qr.measure(2);
+		//boolean measurement = qr.measure(2);
 	}
 
 }

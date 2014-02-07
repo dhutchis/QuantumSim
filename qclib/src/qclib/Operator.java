@@ -1,24 +1,12 @@
 package qclib;
 
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 import org.apache.commons.math3.complex.Complex;
 import org.apache.commons.math3.complex.ComplexField;
 import org.apache.commons.math3.linear.ArrayFieldVector;
 import org.apache.commons.math3.linear.FieldVector;
-import org.apache.commons.math3.util.ArithmeticUtils;
-import org.apache.commons.math3.util.Pair;
 
 import qclib.util.BitSetUtil;
 import qclib.util.QuantumUtil;
@@ -202,6 +190,32 @@ public abstract class Operator {
 				return invec;
 			}
 		};
+	}
+
+	/**
+	 * Apples this Operator to a given datavec and stores the result in datavec.
+	 * Length of datavec is 2^datavecloglength
+	 * @param op
+	 * @param data
+	 * @param targetbits
+	 */
+	public void applyTo(int datavecloglength, FieldVector<Complex> datavec, int... targetbits) {
+		if (targetbits == null || datavec == null || targetbits.length > datavecloglength)
+			throw new IllegalArgumentException("bad arguments to QuantumUtil.doOp");
+		if (1<<datavecloglength != datavec.getDimension())
+			System.err.println("Warning: datavecloglength="+datavecloglength+", datavec.getDimension()="+datavec.getDimension());
+		
+		// vector to hold the amplitudes to pass to the operator
+		FieldVector<Complex> vec = new ArrayFieldVector<Complex>(ComplexField.getInstance(),1<<targetbits.length);
+		// map indices in this.data to indices in vec, in order specified by targetbits
+		Set<int[]> indexset = QuantumUtil.translateIndices(datavecloglength, targetbits);
+		// for each set of indices indexing into this.data
+		for (int[] indices : indexset) {
+			// get the amplitudes from this.data into vec, do the operator on vec to get a new vec, and set the new amplitudes from vec into this.data 
+			QuantumUtil.indexGet(datavec, indices, vec);
+			vec = this.apply(vec);
+			QuantumUtil.indexSet(datavec, indices, vec);
+		}
 	}
 	
 	/**
