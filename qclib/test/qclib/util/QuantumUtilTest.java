@@ -20,9 +20,9 @@ import org.apache.commons.math3.linear.ArrayFieldVector;
 import org.apache.commons.math3.linear.FieldVector;
 import org.junit.Test;
 
-import qclib.CNOT;
 import qclib.Operator;
-import qclib.Z;
+import qclib.op.CNOT;
+import qclib.op.Z;
 
 /**
  *
@@ -219,13 +219,13 @@ public class QuantumUtilTest {
 	}
 
 	/**
-	 * Test method for {@link qclib.util.QuantumUtil#doOp(qclib.Operator, int, org.apache.commons.math3.linear.FieldVector, int[])}.
+	 * Test method for {@link qclib.Operator#applyTo(qclib.Operator, int, org.apache.commons.math3.linear.FieldVector, int[])}.
 	 */
 	@SuppressWarnings("unchecked")
 	@Test
 	public final void testDoOp() {
-		FieldVector<Complex> v1, v2, v3, v4;
-		FieldVector<Complex> v1e, v2e, v3e, v4e;
+		FieldVector<Complex> v1, v2, v3;
+		FieldVector<Complex> v1e, v2e, v3e;
 		v1 = QuantumUtil.buildVector(0, 1, 2, 3, 4, 5, 6, 7);
 		v1e =QuantumUtil.buildVector(10, 11, 12, 13, 14, 15, 16, 17); // map +10 to all 3 qubits
 		
@@ -257,7 +257,7 @@ public class QuantumUtilTest {
 		};
 		
 		for (int t=0; t<v.length; t++) {
-			QuantumUtil.doOp(o[t], dvll[t], v[t], tbs[t]);
+			o[t].applyTo(dvll[t], v[t], tbs[t]);
 			assertTrue("testcase["+t+"]:\nresult ="+QuantumUtil.printVector(v[t])+"\nexpected="+QuantumUtil.printVector(ve[t]),
 					QuantumUtil.isApproxEqualVector(v[t], ve[t]) );
 		}

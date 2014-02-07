@@ -1,7 +1,9 @@
-package qclib;
+package qclib.op;
 
 import org.apache.commons.math3.complex.Complex;
 import org.apache.commons.math3.linear.FieldVector;
+
+import qclib.Operator;
 
 public class H extends Operator {
 

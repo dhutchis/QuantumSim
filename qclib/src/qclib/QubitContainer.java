@@ -1,13 +1,10 @@
 package qclib;
 
-import java.util.Set;
-
 import org.apache.commons.math3.complex.Complex;
 import org.apache.commons.math3.complex.ComplexField;
 import org.apache.commons.math3.linear.ArrayFieldVector;
 import org.apache.commons.math3.linear.FieldVector;
 import org.apache.commons.math3.linear.SparseFieldVector;
-import org.apache.commons.math3.util.ArithmeticUtils;
 
 import qclib.util.QuantumUtil;
 
@@ -123,7 +120,7 @@ public class QubitContainer {
 				|| op.getArity() != targetbits.length)
 			throw new IllegalArgumentException("bad argument operator targetbits");
 
-		QuantumUtil.doOp(op, numbits, this.data, targetbits);
+		op.applyTo(numbits, this.data, targetbits);
 		return this;
 	}
 	
