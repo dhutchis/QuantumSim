@@ -24,12 +24,15 @@ public class QubitContainer {
 	
 	/** Qubit container initially contains 1 in the |00...0> amplitude and 0 everywhere else. */
 	public QubitContainer(int numbits, boolean isSparse) {
+		if (numbits <= 0)
+			throw new IllegalArgumentException("bad number of qubits: "+numbits);
 		this.numbits = numbits;
 		if (isSparse) {
 			data = new SparseFieldVector<Complex>(ComplexField.getInstance(), 1<<numbits);
 		} else {
 			data = new ArrayFieldVector<Complex>(ComplexField.getInstance(), 1<<numbits);
 		}
+		data.setEntry(0, Complex.ONE);
 	}
 	
 	public int getNumbits() { return numbits; }
@@ -60,7 +63,7 @@ public class QubitContainer {
 	 * @return this
 	 */
 	public QubitContainer setAmps(FieldVector<Complex> amps) {
-		if (amps == null || amps.getDimension() > numbits)
+		if (amps == null || amps.getDimension() > (1<<numbits))
 			throw new IllegalArgumentException("bad number of amps given: "+amps);
 		data = amps.copy();
 		checkUnit(); // for safety

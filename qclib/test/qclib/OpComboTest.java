@@ -33,7 +33,7 @@ public class OpComboTest {
 		// do cnot(control=0,target=1), then z(1), then cnot(control=0,target=1)
 		Operator z0=new Z(), cnot01 = new CNOT(); // target,control = 0,1
 		Operator cnot10 = cnot01.swapBits(1, 0);  // target,control = 1,0
-		Operator z1 = Operator.combineIndependentOps(2, Collections.singletonMap(z0, Collections.singletonList(new int[] {1})));
+		Operator z1 = z0.extend(2, 1);
 		Operator combo = cnot01.curryBefore(z1).curryBefore(cnot10);
 		
 		final int numtests = 5;
@@ -76,12 +76,12 @@ public class OpComboTest {
 	 * Test method for {@link qclib.Operator#combineIndependentOps(int, java.util.Map)}.
 	 */
 	@Test
-	public final void testCombineIndependentOps() {
+	public final void testExtend() {
 		// create a 2-qubit operator ZZ that applies Z to both qubits
 		Operator z=new Z();
 		Map<Operator,List<int[]>> opmap = new HashMap<Operator,List<int[]>>(2);
 		opmap.put(z, Arrays.asList( new int[][] {{0},{1}} ));
-		Operator zz = Operator.combineIndependentOps(2, opmap);
+		Operator zz = z.extend(2, 0).curryBefore(z.extend(2, 1));
 		
 		FieldVector<Complex> v1, v1e;
 		v1 = QuantumUtil.buildVector(10,11,12,13);
@@ -91,6 +91,17 @@ public class OpComboTest {
 
 		assertTrue("result ="+QuantumUtil.printVector(v1)+"\nexpected="+QuantumUtil.printVector(v1e),
 				QuantumUtil.isApproxEqualVector(v1e, v1) );
+	}
+	
+	@Test
+	public final void testToffoli() {
+		Operator h = new H(), 
+				cv = new CV(),
+				cvConj = new CV(); // placeholder
+		
+		QubitRegister qr = new QubitRegister(3);
+		qr.doOp(h, 2).doOp(cv, 1, 2).doOp(cvConj, 0, 2).doOp(cv, 1, 2).doOp(h, 2);
+		boolean measurement = qr.measure(2);
 	}
 
 }

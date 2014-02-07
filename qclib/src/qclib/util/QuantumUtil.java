@@ -246,7 +246,7 @@ public final class QuantumUtil {
 	 * @param v1part
 	 */
 	public static void indexSet(FieldVector<Complex> v1, final int[] indices, final FieldVector<Complex> v1part) {
-		if (v1part.getDimension() != indices.length)
+		if (v1part.getDimension() < indices.length)
 			throw new IllegalArgumentException("v1part.getDimension()="+v1part.getDimension()+", indices.length="+indices.length);
 		for (int i=0; i < indices.length; i++)
 			v1.setEntry(indices[i], v1part.getEntry(i));

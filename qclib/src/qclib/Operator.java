@@ -67,12 +67,14 @@ public abstract class Operator {
 	}
 	
 	/**
-	 * Returns a new Operator that calls this one, passing newbits[i] to Operator bit i
+	 * Returns a new Operator that calls this one, passing newbits[i] to Operator bit i.
+	 * Equivalent to this.extend(this.getArity(), newbits);
 	 * @param newbits The bits 0, 1, ..., getArity()-1 in some new order 
 	 * @return new Operator
 	 */
 	public Operator swapBits(int... newbits) {
-		checkSetUniquelyK(true, arity, newbits);
+		return this.extend(arity, newbits);
+		/*checkSetUniquelyK(true, arity, newbits);
 		
 		Set<int[]> transet = QuantumUtil.translateIndices(arity, newbits);
 		assert transet.size() == 1;
@@ -88,7 +90,7 @@ public abstract class Operator {
 				QuantumUtil.indexSet(invec, indices, remappedVec);
 				return invec;
 			}
-		};
+		};*/
 		
 	}
 	
@@ -98,6 +100,7 @@ public abstract class Operator {
 		checkSetUniquelyK(mustCoverAll, k, Collections.singleton(s));
 	}
 	
+	/*
 	private static <T> Iterable<T> flattenCollection(final Iterable<? extends Iterable<T>> iterableHigh) {
 		return new Iterable<T>() {
 
@@ -153,7 +156,7 @@ public abstract class Operator {
 			}
 			
 		};
-	}
+	}*/
 	
 	/** Checks that each int in {0,1,...,k-1} is uniquely contained in the set of int[]s. Throws an exception if not. */
 	private static void checkSetUniquelyK(boolean mustCoverAll, int k, Iterable<int[]> s) {
@@ -175,7 +178,7 @@ public abstract class Operator {
 	 * @param extendedArity m
 	 * @param targetbits which bits among {0,1,...,m-1} to pass to bits {0,1,...,n-1} of op.
 	 */
-	public Operator extendOperator(final int extendedArity, final int... targetbits) {
+	public Operator extend(final int extendedArity, final int... targetbits) {
 		checkSetUniquelyK(false, extendedArity, targetbits);
 		if (targetbits.length != arity)
 			throw new IllegalArgumentException("targetbits should have the same length as arity");
@@ -186,7 +189,7 @@ public abstract class Operator {
 		final Set<int[]> transet = QuantumUtil.translateIndices(extendedArity, targetbits);
 		final Operator outside = this;
 		
-		return new Operator(arity) {
+		return new Operator(extendedArity) {
 			@Override
 			public FieldVector<Complex> apply(FieldVector<Complex> invec) {
 				// TODO check this: for loop through the appropriate indices
@@ -214,7 +217,7 @@ public abstract class Operator {
 	 * @param opmap
 	 * @return THe log-k arity combined Operator.
 	 */
-	public static Operator combineIndependentOps(final int logk, final Map<Operator, List<int[]>> opmap) {
+	/*public static Operator combineIndependentOps(final int logk, final Map<Operator, List<int[]>> opmap) {
 		// error-checking: integers should be unique, cover 0..k-1
 		// turn off for performance
 		if (opmap == null || opmap.size() == 0 || logk <= 0)
@@ -237,6 +240,6 @@ public abstract class Operator {
 			}
 			
 		};
-	}
+	}*/
 	
 }
