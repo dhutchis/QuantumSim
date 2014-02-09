@@ -1,8 +1,8 @@
 package qclib.op;
 
-import qclib.CNOT;
-import qclib.CV;
-import qclib.H;
+import qclib.op.CNOT;
+import qclib.op.CV;
+import qclib.op.H;
 import qclib.Operator;
 
 public class ComboOps {

@@ -41,5 +41,18 @@ public class OpTest {
 		FieldVector<Complex> testvec = QuantumUtil.buildVector((c0.add(c1)).divide(Math.sqrt(2)), (c0.subtract(c1)).divide(Math.sqrt(2)));
 		assertTrue( QuantumUtil.isApproxEqualVector(outvec, testvec)  );
 	}
-
+	
+	@Test
+	public void testToffoli() {
+		Complex c0 = new Complex(1,1),
+				c1 = new Complex(1,1),
+				c2 = new Complex(1,1);
+		FieldVector<Complex> vec = QuantumUtil.buildVector(c0, c1, c2);
+		FieldVector<Complex> outvec = ComboOps.toffoli().apply(vec);
+		
+		//FieldVector<Complex> testvec = QuantumUtil.buildVector();
+		//assertTrue( QuantumUtil.isApproxEqualVector(outvec, testvec)  );
+	}
+	
+	
 }
