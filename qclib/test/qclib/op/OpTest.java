@@ -44,10 +44,10 @@ public class OpTest {
 	
 	@Test
 	public void testToffoli() {
-		Complex c0 = new Complex(1,1),
-				c1 = new Complex(1,1),
-				c2 = new Complex(1,1);
-		FieldVector<Complex> vec = QuantumUtil.buildVector(c0, c1, c2);
+//		Complex c0 = new Complex(1,1),
+//				c1 = new Complex(1,1),
+//				c2 = new Complex(1,1);
+		FieldVector<Complex> vec = QuantumUtil.buildVector(1, 0, 0, 0, 0, 0, 0, 0);
 		FieldVector<Complex> outvec = ComboOps.toffoli().apply(vec);
 		
 		//FieldVector<Complex> testvec = QuantumUtil.buildVector();
