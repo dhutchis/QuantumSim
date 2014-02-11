@@ -16,7 +16,7 @@ public class Z extends Operator {
 	 * Creates new vector; does not change original.
 	 */
 	@Override
-	public FieldVector<Complex> apply(FieldVector<Complex> invec) {
+	public FieldVector<Complex> myApply(FieldVector<Complex> invec) {
 		FieldVector<Complex> outvec = invec.copy();
 		outvec.setEntry(1, outvec.getEntry(1).negate());
 		return outvec;

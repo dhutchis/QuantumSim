@@ -21,7 +21,7 @@ public class CV extends Operator {
 	 * Order of the two qubits does not matter.
 	 */
 	@Override
-	public FieldVector<Complex> apply(FieldVector<Complex> invec) {
+	public FieldVector<Complex> myApply(FieldVector<Complex> invec) {
 		FieldVector<Complex> outvec = invec.copy();
 		outvec.setEntry(3, outvec.getEntry(3).multiply(Complex.I));
 		return outvec;

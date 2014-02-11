@@ -26,7 +26,7 @@ public class CZ extends Operator {
 	 * Todo: FIX ME
 	 */
 	@Override
-	public FieldVector<Complex> apply(FieldVector<Complex> invec) {
+	public FieldVector<Complex> myApply(FieldVector<Complex> invec) {
 		FieldVector<Complex> outvec = invec.copy();
 		outvec.setEntry(3, outvec.getEntry(3).negate());
 		return outvec;

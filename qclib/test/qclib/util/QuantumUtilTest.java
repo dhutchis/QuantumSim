@@ -239,7 +239,7 @@ public class QuantumUtilTest {
 		Operator o1, o2, o3;
 		o1 = new Operator(3) {
 			@Override
-			public FieldVector<Complex> apply(FieldVector<Complex> invec) {
+			public FieldVector<Complex> myApply(FieldVector<Complex> invec) {
 				return invec.mapAdd(new Complex(10));
 			}
 		};

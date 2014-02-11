@@ -18,7 +18,7 @@ public class PhaseGate extends Operator {
 	 * Creates new vector; does not change original.
 	 */
 	@Override
-	public FieldVector<Complex> apply(FieldVector<Complex> invec) {
+	public FieldVector<Complex> myApply(FieldVector<Complex> invec) {
 		FieldVector<Complex> outvec = invec.copy();
 		outvec.setEntry(1, outvec.getEntry(1).multiply(new Complex(0,this.phaseShift).exp()));
 		return outvec;

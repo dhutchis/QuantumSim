@@ -19,7 +19,7 @@ public class CPhaseGate extends Operator {
 	 * Creates new vector; does not change original.
 	 */
 	@Override
-	public FieldVector<Complex> apply(FieldVector<Complex> invec) {
+	public FieldVector<Complex> myApply(FieldVector<Complex> invec) {
 		FieldVector<Complex> outvec = invec.copy();
 		outvec.setEntry(3, outvec.getEntry(3).multiply(new Complex(0,this.phaseShift).exp()));
 		return outvec;

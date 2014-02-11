@@ -18,7 +18,7 @@ public class CNOT extends Operator {
 	 * First bit is target bit; second bit is control bit.
 	 */
 	@Override
-	public FieldVector<Complex> apply(FieldVector<Complex> invec) {
+	public FieldVector<Complex> myApply(FieldVector<Complex> invec) {
 		FieldVector<Complex> outvec = invec.copy();
 		outvec.setEntry(2, invec.getEntry(3));
 		outvec.setEntry(3, invec.getEntry(2));

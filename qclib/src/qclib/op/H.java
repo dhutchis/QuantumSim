@@ -16,7 +16,7 @@ public class H extends Operator {
 	 * Creates new vector; does not change original.
 	 */
 	@Override
-	public FieldVector<Complex> apply(FieldVector<Complex> invec) {
+	public FieldVector<Complex> myApply(FieldVector<Complex> invec) {
 		FieldVector<Complex> outvec = invec.copy();
 		outvec.setEntry(0, (invec.getEntry(0).add(invec.getEntry(1))).divide(Math.sqrt(2)) );
 		outvec.setEntry(1, (invec.getEntry(0).subtract(invec.getEntry(1))).divide(Math.sqrt(2)) );

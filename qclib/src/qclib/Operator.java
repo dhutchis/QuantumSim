@@ -24,13 +24,35 @@ public abstract class Operator {
 	public int getArity() { return arity; }
 	
 	/**
+	 * *Performs error checking before calling a subclass's myApply method.*
 	 * Given a vector with qubit amplitudes in standard order, 
 	 *   return a new vector with the results of the operator application.
 	 * Ex. for 2 qubits, vector is in order of {|00>, |01>, |10>, |11>} 
 	 * @param invec vector of length 2^arity
 	 * @return vector of length 2^arity
 	 */
-	public abstract FieldVector<Complex> apply(FieldVector<Complex> invec);
+	public final FieldVector<Complex> apply(FieldVector<Complex> invec) {
+		if (invec == null)
+			throw new IllegalArgumentException("no null's please");
+		if (invec.getDimension() != 1<<arity)
+			throw new IllegalArgumentException("bad operator argument does not match arity: this="+this.arity+", inevc dimension="+invec.getDimension());
+		
+		FieldVector<Complex> result = this.apply(invec);
+		
+		// sanity check for subclasses: result vector has same dimension
+		assert (result.getDimension() != 1<<arity) : "bad subclass; returned a vector of different dimension";
+		return result;
+	}
+	
+	/**
+	 * *Subclasses must override this method. Error checking performed before call.*
+	 * Given a vector with qubit amplitudes in standard order, 
+	 *   return a new vector with the results of the operator application.
+	 * Ex. for 2 qubits, vector is in order of {|00>, |01>, |10>, |11>} 
+	 * @param invec vector of length 2^arity
+	 * @return vector of length 2^arity
+	 */
+	protected abstract FieldVector<Complex> myApply(FieldVector<Complex> invec);
 	// should I do error checking- For vector size?
 	
 	/**
@@ -47,8 +69,8 @@ public abstract class Operator {
 		final Operator outside = this;
 		return new Operator(arity) {
 			@Override
-			public FieldVector<Complex> apply(FieldVector<Complex> invec) {
-				return op2.apply(outside.apply(invec));
+			public FieldVector<Complex> myApply(FieldVector<Complex> invec) {
+				return op2.myApply(outside.myApply(invec));
 			}
 			
 		};
@@ -179,7 +201,7 @@ public abstract class Operator {
 		
 		return new Operator(extendedArity) {
 			@Override
-			public FieldVector<Complex> apply(FieldVector<Complex> invec) {
+			public FieldVector<Complex> myApply(FieldVector<Complex> invec) {
 				// TODO check this: for loop through the appropriate indices
 				FieldVector<Complex> remappedVec = new ArrayFieldVector<Complex>(ComplexField.getInstance(), 1<<extendedArity);
 				for (int[] indices : transet) {
@@ -213,7 +235,7 @@ public abstract class Operator {
 		for (int[] indices : indexset) {
 			// get the amplitudes from this.data into vec, do the operator on vec to get a new vec, and set the new amplitudes from vec into this.data 
 			QuantumUtil.indexGet(datavec, indices, vec);
-			vec = this.apply(vec);
+			vec = this.myApply(vec);
 			QuantumUtil.indexSet(datavec, indices, vec);
 		}
 	}
