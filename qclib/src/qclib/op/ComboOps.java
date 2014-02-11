@@ -7,6 +7,7 @@ import qclib.Operator;
 
 public class ComboOps {
 
+	/** Control bits 0,1; target bit 2 */
 	public static Operator toffoli() {
 		Operator H2 = new H().extend(3, 2);
 		Operator CV12 = new CV().extend(3, 1, 2);

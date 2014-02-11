@@ -87,7 +87,7 @@ public final class QuantumUtil {
 	/// ---------------
 
 	/** Interface for a callback function, which is passed a BitSet for each possible freebit combination */
-	public static interface BitSetCallback<T> {
+	static interface BitSetCallback<T> {
 		public T doWithFreeBitsSet(BitSet freebitset);
 	}
 	
@@ -104,7 +104,7 @@ public final class QuantumUtil {
 	 * @param callback
 	 * @return
 	 */
-	public static <T> Set<T> doForEachFreeBitSet(final BitSet freebitmask, final BitSetCallback<T> callback) {
+	static <T> Set<T> doForEachFreeBitSet(final BitSet freebitmask, final BitSetCallback<T> callback) {
 		Set<T> ret = new HashSet<T>(freebitmask.cardinality());
 		doForEachFreeBitSet_Help(freebitmask, callback, ret, 0, new BitSet(freebitmask.size()));
 		return ret;
@@ -288,6 +288,12 @@ public final class QuantumUtil {
 		for (int i : arr)
 			s.add(i);
 		return s;
+	}
+	
+	/** Returns <code>in</code>, normalized by its magnitude.
+	 * Ex. 1|0> + 2|1> ==> (1/sqrt(5))|0> + (2/sqrt(5))|1>  */
+	public static FieldVector<Complex> normalizeVector(FieldVector<Complex> in) {
+		return in.mapDivide(in.dotProduct(in).sqrt());
 	}
 	
 }

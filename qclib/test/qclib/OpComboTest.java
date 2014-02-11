@@ -93,16 +93,5 @@ public class OpComboTest {
 		assertTrue("result ="+QuantumUtil.printVector(v1)+"\nexpected="+QuantumUtil.printVector(v1e),
 				QuantumUtil.isApproxEqualVector(v1e, v1) );
 	}
-	
-	@Test
-	public final void testToffoli() {
-		Operator h = new H(), 
-				cv = new CV(),
-				cvConj = new CV(); // placeholder
-		
-		QubitRegister qr = new QubitRegister(3);
-		qr.doOp(h, 2).doOp(cv, 1, 2).doOp(cvConj, 0, 2).doOp(cv, 1, 2).doOp(h, 2);
-		//boolean measurement = qr.measure(2);
-	}
 
 }
