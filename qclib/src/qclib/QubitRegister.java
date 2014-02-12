@@ -11,6 +11,7 @@ import org.apache.commons.math3.linear.ArrayFieldVector;
 import org.apache.commons.math3.linear.FieldVector;
 import org.apache.commons.math3.util.Pair;
 
+import qclib.util.BitSetUtil;
 import qclib.util.QuantumUtil;
 
 public class QubitRegister {
@@ -133,6 +134,40 @@ public class QubitRegister {
 	// but need to distinguish which bits are entangled and which are not.
 	
 	/**
+	 * Gets the qubit amplitudes from the underlying container.  REQUIRES that all the qubits be in the same container.
+	 * Very similar to setAmps(), but more restrictive.
+	 * @param qubits the qubits of a single container
+	 * @return The amplitudes, in order.
+	 */
+	public FieldVector<Complex> getAmps(int... qubits) {
+		Set<QubitContainer> conts = getContainersHolding(qubits);
+		QubitContainer qcTarget; // the SINGLE container whose amplitudes we will set 
+		if (conts.size() != 1) 
+			throw new IllegalArgumentException("the qubits "+BitSetUtil.printIntArray(qubits)+" are not in a single container. qr: "+this);
+		
+		qcTarget = conts.iterator().next();
+		if (qubits.length != qcTarget.getNumbits()) // need to specify all the qubits in the container
+			throw new IllegalArgumentException("provided "+qubits.length+" qubits but they are in a container of size "+qcTarget.getNumbits());
+		
+		int[] targetbits = new int[qubits.length];
+		for (int i=0; i<qubits.length; i++) {
+			targetbits[i] = qubitToQC[qubits[i]].getFirst(); // the position of qubit[i] in qcTarget
+			assert qubitToQC[i].getSecond() == qcTarget;
+		}
+		
+		// translate from indices on qubits in the QR to indices on qubits in the QC
+		Set<int[]> idxset = QuantumUtil.translateIndices(qubits.length, targetbits);
+		assert idxset.size() == 1;
+		int[] indices = idxset.iterator().next();
+		
+		FieldVector<Complex> amps = new ArrayFieldVector<Complex>(ComplexField.getInstance(), 1<<qubits.length),
+				reorderedAmps = qcTarget.getAmps();
+		QuantumUtil.indexSet(amps, indices, reorderedAmps);
+		
+		return amps;
+	}
+	
+	/**
 	 * Naive implementation of setting amplitudes of qubits in the register.
 	 * Cases:
 	 * 1) Want to set n qubits, all n are in the same container.  OK!  Just match the order of the qubits to the order of the container.
@@ -171,7 +206,7 @@ public class QubitRegister {
 		
 		int[] targetbits = new int[qubits.length];
 		for (int i=0; i<qubits.length; i++) {
-			targetbits[i] = qubitToQC[i].getFirst(); // the position of qubit[i] in qcTarget
+			targetbits[i] = qubitToQC[qubits[i]].getFirst(); // the position of qubit[i] in qcTarget
 			assert qubitToQC[i].getSecond() == qcTarget;
 		}
 		

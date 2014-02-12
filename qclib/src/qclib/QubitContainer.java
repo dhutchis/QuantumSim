@@ -145,7 +145,7 @@ public class QubitContainer {
 		
 		// return 0 with probability sumSquaresZero
 		// return 1 with probability 1-sumSquaresZero == sumSquaresOne
-		boolean result = Math.random() < sumSquaresZero;
+		boolean result = Math.random() > sumSquaresZero;
 		// collapse the state via normalization
 		double sumSquaresResult = result ? sumSquaresOne : sumSquaresZero;
 		if (!QuantumUtil.isApproxZero(sumSquaresResult)) {
@@ -185,10 +185,12 @@ public class QubitContainer {
 	private void measureNormalize(final int targetbit, int bitnum, int bitaddr, final double norm) {
 		if (bitnum == targetbit)
 			measureNormalize(targetbit, bitnum+1, bitaddr, norm);
-		if (bitnum >= numbits)
+		else if (bitnum >= numbits)
 			data.setEntry(bitaddr, data.getEntry(bitaddr).divide(norm));
-		measureNormalize(targetbit, bitnum+1, bitaddr, norm);
-		measureNormalize(targetbit, bitnum+1, bitaddr | (1<<bitnum), norm);
+		else {
+			measureNormalize(targetbit, bitnum+1, bitaddr, norm);
+			measureNormalize(targetbit, bitnum+1, bitaddr | (1<<bitnum), norm);
+		}
 	}
 	
 	/** Set the coefficients of each bit to zero,
@@ -196,10 +198,12 @@ public class QubitContainer {
 	private void measureSetZero(final int targetbit, int bitnum, int bitaddr) {
 		if (bitnum == targetbit)
 			measureSetZero(targetbit, bitnum+1, bitaddr);
-		if (bitnum >= numbits)
+		else if (bitnum >= numbits)
 			data.setEntry(bitaddr, Complex.ZERO);
-		measureSetZero(targetbit, bitnum+1, bitaddr);
-		measureSetZero(targetbit, bitnum+1, bitaddr | (1<<bitnum));
+		else {
+			measureSetZero(targetbit, bitnum+1, bitaddr);
+			measureSetZero(targetbit, bitnum+1, bitaddr | (1<<bitnum));
+		}
 	}
 	
 }

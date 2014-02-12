@@ -97,7 +97,7 @@ public class QuantumUtilTest {
 		
 		@SuppressWarnings("unchecked")
 		Set<int[]>[] expected = new Set[] {
-				Collections.singleton(new int[] {0}),
+				Collections.singleton(new int[] {0,1}),
 				Collections.singleton(new int[] {0b00, 0b01, 0b10, 0b11}),
 				Collections.singleton(new int[] {0b00, 0b10, 0b01, 0b11}),
 				new HashSet<int[]>( Arrays.asList(new int[][] 

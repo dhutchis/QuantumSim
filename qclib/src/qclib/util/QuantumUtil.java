@@ -158,7 +158,7 @@ public final class QuantumUtil {
 			throw new IllegalArgumentException("bad v1loglen="+v1loglen+", targetbits "+targetbits+(targetbits==null?"":" with length "+targetbits));
 		if (v1loglen == 1)
 			if (targetbits[0] == 0)
-				return Collections.singleton(new int[] {0}); // degenerate case
+				return Collections.singleton(new int[] {0,1}); // degenerate case
 			else 
 				throw new IllegalArgumentException("bad v1loglen="+v1loglen+", targetbits "+targetbits+(targetbits==null?"":" with length "+targetbits));
 
