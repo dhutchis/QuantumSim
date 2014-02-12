@@ -37,10 +37,10 @@ public abstract class Operator {
 		if (invec.getDimension() != 1<<arity)
 			throw new IllegalArgumentException("bad operator argument does not match arity: this="+this.arity+", inevc dimension="+invec.getDimension());
 		
-		FieldVector<Complex> result = this.apply(invec);
+		FieldVector<Complex> result = this.myApply(invec);
 		
 		// sanity check for subclasses: result vector has same dimension
-		assert (result.getDimension() != 1<<arity) : "bad subclass; returned a vector of different dimension";
+		assert (result.getDimension() == (1<<arity)) : "bad subclass; returned a vector of different dimension "+result.getDimension()+" while arity is "+arity+" and input dimension is "+invec.getDimension();
 		return result;
 	}
 	
@@ -193,17 +193,13 @@ public abstract class Operator {
 		if (targetbits.length != arity)
 			throw new IllegalArgumentException("targetbits should have the same length as arity");
 		
-		// TODO: test this class
-		// This method generalizes swapBits( ).  Combine the two.
-		
 		final Set<int[]> transet = QuantumUtil.translateIndices(extendedArity, targetbits);
 		final Operator outside = this;
 		
 		return new Operator(extendedArity) {
 			@Override
 			public FieldVector<Complex> myApply(FieldVector<Complex> invec) {
-				// TODO check this: for loop through the appropriate indices
-				FieldVector<Complex> remappedVec = new ArrayFieldVector<Complex>(ComplexField.getInstance(), 1<<extendedArity);
+				FieldVector<Complex> remappedVec = new ArrayFieldVector<Complex>(ComplexField.getInstance(), 1<<outside.arity);
 				for (int[] indices : transet) {
 					QuantumUtil.indexGet(invec, indices, remappedVec);
 					remappedVec = outside.apply(remappedVec);

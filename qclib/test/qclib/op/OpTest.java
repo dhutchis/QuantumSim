@@ -45,12 +45,15 @@ public class OpTest {
 	@Test
 	public void testToffoli() {
 		FieldVector<Complex> v, ve, vout;
-		v = QuantumUtil.normalizeVector( QuantumUtil.buildVector(1,2,3,4,5,6,7,8) );
+		//v = QuantumUtil.normalizeVector( QuantumUtil.buildVector(1,2,3,4,5,6,7,8) );
+		v = QuantumUtil.buildVector(1,2,3,4,5,6,7,8);
 		
 		// Toffoli should swap the target bit when both control bits are 1
 		ve = v.copy();
 		ve.setEntry(3, v.getEntry(7)); // 3 = 011
 		ve.setEntry(7, v.getEntry(3)); // 7 = 111
+		
+		// obtained output 1,(4,-2),3,(6,-2),5,(4,2),7,(6,2)
 		
 		vout = ComboOps.toffoli().apply(v);
 		assertTrue( "result="+QuantumUtil.printVector(vout)+"\nexpected="+QuantumUtil.printVector(ve), 
