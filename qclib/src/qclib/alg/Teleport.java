@@ -1,5 +1,7 @@
 package qclib.alg;
 
+import org.apache.commons.math3.complex.Complex;
+
 import qclib.QubitRegister;
 import qclib.op.CNOT;
 import qclib.op.H;
@@ -28,21 +30,21 @@ public class Teleport {
 		 .setAmps( QuantumUtil.buildVector(1,0) , 2); 	// bellBit2 is |0>
 		qr.doOp(new H(), 1); 							// bellBit1 is (|0>+|1>) / sqrt(2)
 		qr.doOp(new CNOT(), 2, 1); //control 1, target 2;  bellBits are (|00> + |11>) / sqrt(2)
-		System.out.println("qr before teleport: "+qr);
+		System.out.println("qr before teleport:\n"+qr.printBits(2,1,0));
 		
 		System.out.println("Alice performs CNOT on srcBit and her half of the bellBits, and then H on her half of the bellBits...");
 		qr.doOp(new CNOT(), 1, 0);
-		//System.out.println("qr after CNOT01: "+QuantumUtil.printVector(qr.getAmps(2,1,0)));
+		System.out.println("qr after CNOT01: "+qr.printBits(2,1,0));
 		//System.out.println("qr after CNOT01: "+qr);
 		qr.doOp(new H(), 0);
 		//System.out.println("qr after CNOT01 and H: "+QuantumUtil.printVector(qr.getAmps(2,1,0)));
-		System.out.println("qr after CNOT01 and H: "+qr);
+		System.out.println("qr after CNOT01 and H:\n"+qr.printBits(2,1,0));
 		
 		boolean m0 = qr.measure(0);
 		//System.out.println("qr after measure bit0="+m0+" : "+QuantumUtil.printVector(qr.getAmps(2,1,0)));
 		boolean m1 = qr.measure(1);
 		System.out.println("Measurement: srcBit="+m0+"; bellBit1="+m1);
-		System.out.println("qr after measurment: "+QuantumUtil.printVector(qr.getAmps(2,1,0)) );
+		System.out.println("qr after measurment:\n"+qr.printBits(2,1,0) );
 		
 		System.out.println("Alice sends result to Bob...");
 		if (m1) {
@@ -56,8 +58,14 @@ public class Teleport {
 		
 		System.out.println("Bob now has a copy of the original srcBit in bellBit2");
 		int idx = (m0 ? 0b100 : 0) | (m1 ? 0b010 : 0);
-		System.out.println("Coefficient of |0>: "+qr.getAmps(2,1,0).getEntry(idx));
-		System.out.println("Coefficient of |1>: "+qr.getAmps(2,1,0).getEntry(idx | 0b001));
+		Complex z0 = qr.getAmps(2,1,0).getEntry(idx);
+		System.out.flush();
+		if (!z0.equals(new Complex(.6,0)))
+			z0 = z0;
+		Complex z1 = qr.getAmps(2,1,0).getEntry(idx | 0b001);
+		
+		System.out.println("Coefficient of |0>: "+z0);
+		System.out.println("Coefficient of |1>: "+z1);
 	}
 
 	

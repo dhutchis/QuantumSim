@@ -106,7 +106,7 @@ public abstract class Operator {
 	
 	
 	
-	private static void checkSetUniquelyK(boolean mustCoverAll, int k, int... s) {
+	static void checkSetUniquelyK(boolean mustCoverAll, int k, int... s) {
 		checkSetUniquelyK(mustCoverAll, k, Collections.singleton(s));
 	}
 	
@@ -169,7 +169,7 @@ public abstract class Operator {
 	}*/
 	
 	/** Checks that each int in {0,1,...,k-1} is uniquely contained in the set of int[]s. Throws an exception if not. */
-	private static void checkSetUniquelyK(boolean mustCoverAll, int k, Iterable<int[]> s) {
+	static void checkSetUniquelyK(boolean mustCoverAll, int k, Iterable<int[]> s) {
 		if (k < 0 || s == null)
 			throw new IllegalArgumentException("bad arguments");
 		Set<Integer> kset = QuantumUtil.intArrayToSet(QuantumUtil.makeConsecutiveIntArray(0, k));

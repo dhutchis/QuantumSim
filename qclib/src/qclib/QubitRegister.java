@@ -1,7 +1,12 @@
 package qclib;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Map;
 import java.util.Set;
 
@@ -10,6 +15,10 @@ import org.apache.commons.math3.complex.ComplexField;
 import org.apache.commons.math3.linear.ArrayFieldVector;
 import org.apache.commons.math3.linear.FieldVector;
 import org.apache.commons.math3.util.Pair;
+
+
+
+
 
 import qclib.util.BitSetUtil;
 import qclib.util.QuantumUtil;
@@ -141,7 +150,7 @@ public class QubitRegister {
 	 */
 	public FieldVector<Complex> getAmps(int... qubits) {
 		Set<QubitContainer> conts = getContainersHolding(qubits);
-		QubitContainer qcTarget; // the SINGLE container whose amplitudes we will set 
+		QubitContainer qcTarget; // the SINGLE container whose amplitudes we will get 
 		if (conts.size() != 1) 
 			throw new IllegalArgumentException("the qubits "+BitSetUtil.printIntArray(qubits)+" are not in a single container. qr: "+this);
 		
@@ -160,9 +169,9 @@ public class QubitRegister {
 		assert idxset.size() == 1;
 		int[] indices = idxset.iterator().next();
 		
-		FieldVector<Complex> amps = new ArrayFieldVector<Complex>(ComplexField.getInstance(), 1<<qubits.length),
-				reorderedAmps = qcTarget.getAmps();
-		QuantumUtil.indexSet(amps, indices, reorderedAmps);
+		FieldVector<Complex> amps = qcTarget.getAmps(),
+				reorderedAmps = new ArrayFieldVector<Complex>(ComplexField.getInstance(), 1<<qubits.length);
+		QuantumUtil.indexGet(amps, indices, reorderedAmps);
 		
 		return amps;
 	}
@@ -222,6 +231,78 @@ public class QubitRegister {
 		
 		return this;
 	}
+	
+	/** Returns the first position of num in arr, or -1 if not present. (Sequential linear search) */
+	private int getIndexInArray(int num, int[] arr) {
+		for (int i=0; i<arr.length; i++)
+			if (arr[i] == num)
+				return i;
+		return -1;
+	}
+	
+	/**
+	 * Returns the amplitudes of each qubit.  If in separate containers, prints the qubits in each container.
+	 * @param qubits
+	 * @return
+	 */
+	public String printBits(int... qubits) {
+		Set<QubitContainer> conts = getContainersHolding(qubits);
+		QubitContainer qcTarget; // the SINGLE container we will print bits from
+		if (conts.size() == 1) {
+			// case 1)
+			qcTarget = conts.iterator().next();
+		}
+		else {
+			// multiple containers; call recursively
+			String s = "";
+			for (QubitContainer qc : conts)
+				s += printBits(QCToQubit.get(qc));
+			return s;
+		}
+		
+		// print the bits in this container
+		// qubits = the bits the caller wants to print
+		// qubitsInTarget = the bits in the single container the caller wants to print from
+		// map: for each qubit in container, map that qubit's position to the desired position in the new ordering
+		// (new ordering starts with the order specified by user)
+		
+		int[] qubitsInTarget = QCToQubit.get(qcTarget);
+		int[] map = new int[qubitsInTarget.length];
+		int[] neworder = new int[qubitsInTarget.length];
+		
+		int freeidx = qubits.length; 
+		assert freeidx <= qubitsInTarget.length;
+		for (int i=0; i < qubitsInTarget.length; i++) {
+			int bit = qubitsInTarget[i];
+			int idx = getIndexInArray(bit, qubits); // desired position
+			if (idx == -1) {
+				idx = freeidx++;
+				assert freeidx <= qubitsInTarget.length;
+			}
+			map[i] = idx;
+		}
+		
+		// do the reordering and update the data structures
+		qcTarget.reorderBits(map);
+		for (int i=0; i < qubitsInTarget.length; i++) {
+			int bit = qubitsInTarget[i];
+			qubitToQC[bit] = new Pair<Integer,QubitContainer>(map[i],qcTarget);
+			neworder[map[i]] = qubitsInTarget[i];
+		}
+		QCToQubit.put(qcTarget, neworder);
+		
+		// finally, print the desired String
+		StringBuilder sb = new StringBuilder("{");
+		for (int q : neworder)
+			sb.append(q+",");
+		sb.replace(sb.length()-1, sb.length(), "}");
+		sb.append(":\n "+qcTarget);
+		return sb.toString();
+	}
+	
+	
+	
+	
 	
 	/**
 	 * Measure a qubit. Collapses the qubit state afterward.

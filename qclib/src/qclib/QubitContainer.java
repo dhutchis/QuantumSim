@@ -1,5 +1,8 @@
 package qclib;
 
+import java.text.DecimalFormat;
+import java.util.Set;
+
 import org.apache.commons.math3.complex.Complex;
 import org.apache.commons.math3.complex.ComplexField;
 import org.apache.commons.math3.linear.ArrayFieldVector;
@@ -19,6 +22,11 @@ public class QubitContainer {
 	 *  Ex. 2 qubits => {|00>, |01>, |10>, |11>} */
 	private FieldVector<Complex> data;
 	
+	/** Create a dense container. */
+	public QubitContainer(int numbits) { 
+		this(numbits, false);
+	}
+	
 	/** Qubit container initially contains 1 in the |00...0> amplitude and 0 everywhere else. */
 	public QubitContainer(int numbits, boolean isSparse) {
 		if (numbits <= 0)
@@ -34,19 +42,56 @@ public class QubitContainer {
 	
 	public int getNumbits() { return numbits; }
 	
+	
+	private static final DecimalFormat realFormat = new DecimalFormat(" 0.###;-0.###");
+	private String padToLength(String s, int len) {
+		while (s.length() < len)
+			s += ' ';
+		return s;
+	}
+	
 	/** {|0>=_, |1>=_, |2>=_, |3>=_} */
 	@Override
 	public String toString() {
-		StringBuilder sb = new StringBuilder("{");
-		Complex[] cdata = data.toArray();
-		assert cdata.length == 1<<numbits : "cdata.length="+cdata.length+" but 2^numbits="+(1<<numbits);
-		for (int i = 0; i < cdata.length; i++) {
-			sb.append("|"+i+">="+cdata[i]);
-			if (i != cdata.length-1)
+		
+		StringBuilder sb = new StringBuilder("{ ");
+		for (int i=0; i < (1<<numbits); i++) {
+			Complex c = data.getEntry(i);
+			sb.append('|');
+			// print leading zeros on the index from toBinaryString
+			String idxString = Integer.toBinaryString(i);
+			for (int j=numbits - idxString.length(); j > 0; j--)
+				sb.append('0');
+			
+			sb.append(idxString).append(">=(")
+				.append(padToLength(realFormat.format(c.getReal()), 6)).append(',')
+				.append(padToLength(realFormat.format(c.getImaginary()), 6)).append("i)");
+			
+			if (i == (1<<numbits)-1)
+				sb.append(" }\n");
+			else if (i % 4 == 3)			// put long vector on multiple lines
+				sb.append("\n   ");
+			else 
 				sb.append(", ");
 		}
-		sb.append('}');
 		return sb.toString();
+	}
+	
+	/**
+	 * Permute the bit ordering.  
+	 * Ex.: reorderBits(2,0,1) will make the previous bit 2 the new bit 0, previous bit 0 the new bit 1, previous bit 1 the new bit 2
+	 * @param neworder
+	 */
+	public void reorderBits(int... neworder) {
+		Operator.checkSetUniquelyK(true, this.getNumbits(), neworder);
+		
+		Set<int[]> transet = QuantumUtil.translateIndices(this.getNumbits(), neworder);
+		assert transet.size() == 1;
+		final int[] indices = transet.iterator().next();
+		
+		FieldVector<Complex> remappedVec = new ArrayFieldVector<Complex>(ComplexField.getInstance(), 1<<this.getNumbits());
+		QuantumUtil.indexGet(data, indices, remappedVec);
+		data = remappedVec; // replace data with same data in new order
 	}
 	
 	/** Returns a copy of the data vector. */
@@ -63,7 +108,7 @@ public class QubitContainer {
 		if (amps == null || amps.getDimension() > (1<<numbits))
 			throw new IllegalArgumentException("bad number of amps given: "+amps);
 		data = amps.copy();
-		checkUnit(); // for safety
+		//checkUnit(); // for safety
 		return this;
 	}
 	

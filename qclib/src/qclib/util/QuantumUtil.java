@@ -12,6 +12,9 @@ import org.apache.commons.math3.linear.FieldVector;
 
 public final class QuantumUtil {
 	
+	/** Only static methods; don't make an instance. */
+	private QuantumUtil() {}
+	
 	/** Tolerance for double equality checking */
 	public final static double EPSILON = 0.00001;
 	public final static boolean isApproxZero(double arg) {

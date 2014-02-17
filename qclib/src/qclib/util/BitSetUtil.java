@@ -7,6 +7,10 @@ import java.util.List;
 
 public class BitSetUtil {
 
+	/** Only static methods; don't make an instance. */
+	private BitSetUtil() {}
+	
+	
 	/**
 	 * Typically takes a list of BitSets and returns a BitSet with the OR of all of them.
 	 * @param bss Any iterable collection of BitSets 

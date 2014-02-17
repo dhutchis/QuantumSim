@@ -3,6 +3,7 @@
  */
 package qclib;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
@@ -92,6 +93,16 @@ public class OpComboTest {
 
 		assertTrue("result ="+QuantumUtil.printVector(v1)+"\nexpected="+QuantumUtil.printVector(v1e),
 				QuantumUtil.isApproxEqualVector(v1e, v1) );
+	}
+	
+	@Test
+	public final void testReorderBits() {
+		QubitContainer qc = new QubitContainer(3);
+		qc.setAmps(QuantumUtil.buildVector(0, 1, 2, 3, 4, 5, 6, 7));
+		qc.reorderBits(2,0,1);
+		FieldVector<Complex> v = qc.getAmps();
+		FieldVector<Complex> ve = QuantumUtil.buildVector(0b000,0b100,0b001,0b101,0b010,0b110,0b011,0b111 );
+		assertEquals(ve,v);
 	}
 
 }
