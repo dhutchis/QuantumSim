@@ -94,7 +94,7 @@ public class QubitRegister {
 	 * Future: accept a BitSet argument, since the order does not matter
 	 * @param qubits The qubits to combine into a single QubitContainer of size qubits.length
 	 */
-	void couple(int... qubits) {
+	public void couple(int... qubits) { // make private later
 		// see if they are already part of the same container
 		Set<QubitContainer> qcset = getContainersHolding(qubits);
 		if (qcset.size() == 1)
@@ -242,6 +242,7 @@ public class QubitRegister {
 	
 	/**
 	 * Returns the amplitudes of each qubit.  If in separate containers, prints the qubits in each container.
+	 * Order matters: printBits(5,8) prints in the format |{8}{5}>.
 	 * @param qubits
 	 * @return
 	 */
