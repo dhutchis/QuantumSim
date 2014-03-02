@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map;
@@ -15,6 +16,7 @@ import org.apache.commons.math3.complex.ComplexField;
 import org.apache.commons.math3.linear.ArrayFieldVector;
 import org.apache.commons.math3.linear.FieldVector;
 import org.apache.commons.math3.util.Pair;
+
 
 
 
@@ -315,8 +317,87 @@ public class QubitRegister {
 			throw new IllegalArgumentException("bad targetbit");
 		int bitInQC = qubitToQC[targetbit].getFirst();
 		QubitContainer qc = qubitToQC[targetbit].getSecond();
-		return qc.measure(bitInQC);
-		// decouple afterward?
+		boolean meas = qc.measure(bitInQC);
+		
+		// if we measured a qubit container of size 1, don't need to decouple anything
+		if (qc.getNumbits() == 1)
+			return meas;
+		
+		// decouple afterward
+		/* algorithm:
+		 * 	get the entries excluding the measured bit, in their current order, with the bit set and without the bit set.
+		 *  Check if the first set of entries is all zero.  If so, use the second.  If not, use the first.
+		 *  Construct a new qubit container containing the remaining entries and map those qubits to the new container.
+		 *  Construct a new qubit container of size 1 and map the one qubit to that container.
+		 *    Put 1.0 amplitude in the |0> if !meas, 1.0 amplitude in the |1> if meas.
+		 */
+		
+		// make an array of consecutive ints, except for the one measured
+		int[] mask = new int[qc.getNumbits()-1];
+		for (int i=0, j=0; i < qc.getNumbits(); ) {
+			if (i != bitInQC)
+				mask[j++] = i++;
+			else
+				i++;
+		}
+		System.out.println(Arrays.toString(mask)+" should be an array excluding "+bitInQC);
+		
+		Set<int[]> idxset = QuantumUtil.translateIndices(qc.getNumbits(), mask);
+		assert idxset.size() == 2;
+		int[] indicesA, indicesB;
+		FieldVector<Complex> orig = qc.getAmps( ); // original entries in the original qubit container
+		FieldVector<Complex> vecA = new ArrayFieldVector<Complex>(ComplexField.getInstance(), 1<< qc.getNumbits()-1), 
+				vecB = new ArrayFieldVector<Complex>(ComplexField.getInstance(), 1<< qc.getNumbits()-1);
+		{
+			Iterator<int[]> iter = idxset.iterator();
+			indicesA = iter.next();
+			indicesB = iter.next();
+			assert !iter.hasNext();
+			
+			QuantumUtil.indexGet(orig, indicesA, vecA);
+			QuantumUtil.indexGet(orig, indicesB, vecB);
+		}
+		System.out.println(QuantumUtil.printVector(vecA));
+		System.out.println(QuantumUtil.printVector(vecB));
+		
+		FieldVector<Complex> vecResult; // fill with the entries that came from the appropriate measurement
+		{
+			// is vecA the all zero vector?
+			if (vecA.equals(new ArrayFieldVector<Complex>(ComplexField.getInstance(), 1<< qc.getNumbits()-1)))
+				vecResult = vecB;
+			else
+				vecResult = vecA;
+		}
+		
+		QubitContainer qcRemaining, qcMeasured;
+		qcRemaining = new QubitContainer(qc.getNumbits()-1);
+		qcRemaining.setAmps(vecResult);
+		
+		qcMeasured = new QubitContainer(1);
+		FieldVector<Complex> vecMeasured = new ArrayFieldVector<Complex>(ComplexField.getInstance(), 1<< 1);
+		vecMeasured.setEntry(meas ? 1 : 0, Complex.ONE); // set 0th entry to 1 if measured a 0, set 1st entry to 1 if measured a 1
+		qcMeasured.setAmps(vecMeasured);
+		
+		// change up the maps
+		int[] previousBitsInQC = QCToQubit.get(qc);
+		int[] newBitsInRemainingQC = new int[qc.getNumbits()-1]; assert qc.getNumbits() == previousBitsInQC.length;
+		// exclude the measured bit from the remaining bits
+		for (int i=0, j=0; i < qc.getNumbits(); ) {
+			if (previousBitsInQC[i] != targetbit)
+				newBitsInRemainingQC[j++] = previousBitsInQC[i++];
+			else
+				i++;
+		}
+		
+		QCToQubit.put(qcRemaining, newBitsInRemainingQC);
+		for (int i=0; i < newBitsInRemainingQC.length; i++)
+			qubitToQC[newBitsInRemainingQC[i]] = new Pair<Integer,QubitContainer>(i, qcRemaining);
+		
+		// now for the measured bit
+		QCToQubit.put(qcMeasured, new int[] {targetbit});
+		qubitToQC[targetbit] = new Pair<Integer,QubitContainer>(0, qcMeasured);
+		
+		return meas;
 	}
 	
 	/**

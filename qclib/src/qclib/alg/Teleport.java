@@ -59,9 +59,6 @@ public class Teleport {
 		System.out.println("Bob now has a copy of the original srcBit in bellBit2");
 		int idx = (m0 ? 0b100 : 0) | (m1 ? 0b010 : 0);
 		Complex z0 = qr.getAmps(2,1,0).getEntry(idx);
-		System.out.flush();
-		if (!z0.equals(new Complex(.6,0)))
-			z0 = z0;
 		Complex z1 = qr.getAmps(2,1,0).getEntry(idx | 0b001);
 		
 		System.out.println("Coefficient of |0>: "+z0);
