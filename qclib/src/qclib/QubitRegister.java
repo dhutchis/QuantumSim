@@ -173,7 +173,7 @@ public class QubitRegister {
 				reorderedAmps = new ArrayFieldVector<Complex>(ComplexField.getInstance(), 1<<qubits.length);
 		QuantumUtil.indexGet(amps, indices, reorderedAmps);
 		
-		return amps;
+		return reorderedAmps;
 	}
 	
 	/**
