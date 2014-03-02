@@ -145,37 +145,109 @@ public class QubitRegister {
 	// but need to distinguish which bits are entangled and which are not.
 	
 	/**
-	 * Gets the qubit amplitudes from the underlying container.  REQUIRES that all the qubits be in the same container.
-	 * Very similar to setAmps(), but more restrictive.
+	 * Gets the qubit amplitudes from the underlying container.  
+	 * If the qubits are in different containers, requires that no other non-argument qubits be in those containers.
+	 *   In that case, does not couple the qubits.  Instead, returns a new vector with the amplitudes in proper order.  
 	 * @param qubits the qubits of a single container
 	 * @return The amplitudes, in order.
 	 */
 	public FieldVector<Complex> getAmps(int... qubits) {
 		Set<QubitContainer> conts = getContainersHolding(qubits);
-		QubitContainer qcTarget; // the SINGLE container whose amplitudes we will get 
-		if (conts.size() != 1) 
-			throw new IllegalArgumentException("the qubits "+BitSetUtil.printIntArray(qubits)+" are not in a single container. qr: "+this);
+		QubitContainer qcTarget; 
 		
-		qcTarget = conts.iterator().next();
-		if (qubits.length != qcTarget.getNumbits()) // need to specify all the qubits in the container
-			throw new IllegalArgumentException("provided "+qubits.length+" qubits but they are in a container of size "+qcTarget.getNumbits());
-		
-		int[] targetbits = new int[qubits.length];
-		for (int i=0; i<qubits.length; i++) {
-			targetbits[i] = qubitToQC[qubits[i]].getFirst(); // the position of qubit[i] in qcTarget
-			assert qubitToQC[i].getSecond() == qcTarget;
+		if (conts.size() == 1) {
+			// case 1)
+			qcTarget = conts.iterator().next();
+			
+			qcTarget = conts.iterator().next();
+			if (qubits.length != qcTarget.getNumbits()) // need to specify all the qubits in the container
+				throw new IllegalArgumentException("provided "+qubits.length+" qubits but they are in a container of size "+qcTarget.getNumbits());
+			
+			int[] targetbits = new int[qubits.length];
+			for (int i=0; i<qubits.length; i++) {
+				targetbits[i] = qubitToQC[qubits[i]].getFirst(); // the position of qubit[i] in qcTarget
+				assert qubitToQC[i].getSecond() == qcTarget;
+			}
+			
+			// translate from indices on qubits in the QR to indices on qubits in the QC
+			Set<int[]> idxset = QuantumUtil.translateIndices(qubits.length, targetbits);
+			assert idxset.size() == 1;
+			int[] indices = idxset.iterator().next();
+			
+			FieldVector<Complex> amps = qcTarget.getAmps(),
+					reorderedAmps = new ArrayFieldVector<Complex>(ComplexField.getInstance(), 1<<qubits.length);
+			QuantumUtil.indexGet(amps, indices, reorderedAmps);
+			
+			return reorderedAmps;
+			
+			
+		} else {
+			// check for case 2
+			Set<Integer> qubitsSet = QuantumUtil.intArrayToSet(qubits);
+			for (QubitContainer qc : conts) {
+				for (int qInCont : QCToQubit.get(qc))
+					if (!qubitsSet.contains(qInCont))  
+						throw new IllegalStateException("case 3 not supported; qubit "+qInCont+" is not a target of setAmps but is in a container with another target. qubits="+qubitsSet);
+			}
+			// we have case 2 -- don't couple the containers together but temporarily put them together, using the order of qubits
+			
+			
+			//QubitContainer qcnew = new QubitContainer(qubits.length, false); // dense
+			// this is for the qubits that qcnew will map to
+			int[] qubitsForqcnew = new int[qubits.length];
+			
+			// let's create the vector to set to the new QubitContainer
+			FieldVector<Complex> amps = new ArrayFieldVector<Complex>(ComplexField.getInstance(), 1<<qubits.length); // dense
+			// initialize to all 1s
+			amps.set(Complex.ONE);
+			// now for each QubitContainer we're transferring to the new container
+			int qcnewidx = 0;
+			for (QubitContainer qc : conts) {
+				int[] qubitsTransferring = QCToQubit.get(qc);
+				int[] qcnewidxarr = QuantumUtil.makeConsecutiveIntArray(qcnewidx, qubitsTransferring.length);
+				
+				for (int[] indices : QuantumUtil.translateIndices(qubits.length, qcnewidxarr)) {
+					QuantumUtil.indexMultiplyIn(amps, indices, qc.getAmps());	
+				}
+				
+				// no update maps
+				for (int i=0; i < qubitsTransferring.length; i++) {
+					//qubitToQC[qubitsTransferring[i]] = new Pair<Integer,QubitContainer>(qcnewidx+i, qcnew);
+					qubitsForqcnew[qcnewidx+i] = qubitsTransferring[i]; 
+				}
+				//QCToQubit.remove(qc);
+				
+				qcnewidx += qubitsTransferring.length;
+			}
+			assert qcnewidx == qubits.length;
+			//QCToQubit.put(qcnew, qubitsForqcnew);
+			
+			// now reorder from order qubitsForqcnew to original qubits order
+			int[] neworder = new int[qubits.length];
+			for (int i=0; i<qubits.length; i++) {   // for each in original order
+				for (int j=0; j<qubits.length; j++) // find index in new order
+					if (qubitsForqcnew[i] == qubits[j]) {
+						neworder[i] = j;
+						break;
+					}
+			}
+			
+			Set<int[]> idxset = QuantumUtil.translateIndices(qubits.length, neworder);
+			assert idxset.size() == 1;
+			int[] indices = idxset.iterator().next();
+			
+			FieldVector<Complex> 
+					reorderedAmps = new ArrayFieldVector<Complex>(ComplexField.getInstance(), 1<<qubits.length);
+			QuantumUtil.indexGet(amps, indices, reorderedAmps);
+			
+			// All Done xD
+			return reorderedAmps;
 		}
 		
-		// translate from indices on qubits in the QR to indices on qubits in the QC
-		Set<int[]> idxset = QuantumUtil.translateIndices(qubits.length, targetbits);
-		assert idxset.size() == 1;
-		int[] indices = idxset.iterator().next();
 		
-		FieldVector<Complex> amps = qcTarget.getAmps(),
-				reorderedAmps = new ArrayFieldVector<Complex>(ComplexField.getInstance(), 1<<qubits.length);
-		QuantumUtil.indexGet(amps, indices, reorderedAmps);
 		
-		return reorderedAmps;
+		
+		
 	}
 	
 	/**
@@ -357,8 +429,8 @@ public class QubitRegister {
 			QuantumUtil.indexGet(orig, indicesA, vecA);
 			QuantumUtil.indexGet(orig, indicesB, vecB);
 		}
-		System.out.println(QuantumUtil.printVector(vecA));
-		System.out.println(QuantumUtil.printVector(vecB));
+//		System.out.println(QuantumUtil.printVector(vecA));
+//		System.out.println(QuantumUtil.printVector(vecB));
 		
 		FieldVector<Complex> vecResult; // fill with the entries that came from the appropriate measurement
 		{

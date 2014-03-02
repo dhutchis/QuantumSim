@@ -159,7 +159,7 @@ public class RandomTests {
 		boolean meas1 = qr.measure(11);
 //		System.out.println("measured a "+(meas1 ? 1 : 0) +" on qubit 11");
 		FieldVector<Complex> aout = qr.getAmps(10,11);
-//		System.out.println(qr.printBits(10,11));
+//		System.out.println("aout= "+qr.printBits(10,11));
 		
 		if (!meas1) {
 			// measurement is 0
@@ -173,8 +173,8 @@ public class RandomTests {
 			meas0 = qr.measure(10);
 			aout = qr.getAmps(10,11);
 			
-	//		System.out.println("measured a "+(meas0 ? 1 : 0) +" on qubit 11");
-	//		System.out.println(qr.printBits(10,11));
+//			System.out.println("measured a "+(meas0 ? 1 : 0) +" on qubit 11");
+//			System.out.println(qr.printBits(10,11));
 			
 			if (!meas0) {
 				// measured 0 first bit
@@ -190,19 +190,11 @@ public class RandomTests {
 		} else {
 			// measurement is 1
 			double norm = Math.sqrt((-16.0/25)*(-16.0/25) + (-12.0/25)*(-12.0/25));
-	//		System.out.printf("%f %f\n", (-16.0/25)/norm, (-12.0/25)/norm);
-	//		System.out.println(QuantumUtil.printVector(aout)); // DOES NOT MATCH printBits
+//			System.out.printf("%f %f\n", (-16.0/25)/norm, (-12.0/25)/norm);
+//			System.out.println(QuantumUtil.printVector(aout));
 			assertTrue( QuantumUtil.isApproxEqualVector(aout, 
 					QuantumUtil.buildVector(0, 0, (-16.0/25)/norm, (-12.0/25)/norm )) );
 			
-			/* Possible error in getAmps() from aout
-measured a 1 on qubit 11
-{10,11}:
- { |00>=( 0    , 0    i), |01>=( 0    , 0    i), |10>=(-0.8  , 0    i), |11>=(-0.6  , 0    i) }
-
--0.800000 -0.600000
-<(0.0, 0.0),(-0.8000000000000002, 0.0),(0.0, 0.0),(-0.6, 0.0)>
-			 */
 			
 			// now measure first bit
 			boolean meas0 = qr.measure(11);
