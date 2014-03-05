@@ -87,7 +87,17 @@ public class Deutsch {
 		System.out.print("v3: ");
 		System.out.println(QuantumUtil.printVector(qr.getAmps(0,1)));
 		
-		return qr.measure(1);
+		//Measurement
+		//"If Alice measures all 0s then the function is constant;
+		//otherwise the function is balanced."
+		boolean balanced = false;		
+		for(int i=1;i<qr.getNumqubits();i++){
+			if(qr.measure(i)!=false){
+				balanced = true;
+			}
+		}
+		
+		return balanced;
 	}
 	
 	public static void main(String[] args) {
@@ -102,6 +112,7 @@ public class Deutsch {
 				return false;
 			}
 		});
+		
 		if(balanced){
 			System.out.println("Balanced");
 		} else {
