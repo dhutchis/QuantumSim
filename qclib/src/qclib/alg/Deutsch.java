@@ -37,6 +37,7 @@ public class Deutsch {
 					int idxin = (x << 1) | y;
 					int idxout = (x << 1) | (y ^ (funct.apply(x) ? 1 : 0));
 					
+					outvec.setEntry( idxout,  outvec.getEntry(idxout).add(invec.getEntry(idxin)) );
 				}
 			
 			return outvec;
@@ -97,7 +98,7 @@ public class Deutsch {
 				if(argument == 0){
 					return false;
 				}
-				return false;
+				return true;
 			}
 		});
 		
