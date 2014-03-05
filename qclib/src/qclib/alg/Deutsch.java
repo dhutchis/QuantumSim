@@ -70,13 +70,10 @@ public class Deutsch {
 		System.out.println(QuantumUtil.printVector(qr.getAmps(0,1)));
 		
 		SpecialF special = new SpecialF(funct, arity);
-<<<<<<< HEAD
 		
 		//TODO generalise to
 		//qr.doOp(special, [all qubits from 0 to qr.getNumqubits()-1] );
-		
-=======
->>>>>>> 5de344e2dbf25097a2d3c34811207821645562f6
+
 		//Apply function
 		qr.doOp(special, 0, 1);
 		System.out.print("v2: ");
@@ -104,10 +101,6 @@ public class Deutsch {
 			}
 		});
 		
-<<<<<<< HEAD
 		System.out.println("Balanced: "+balanced);
-=======
-		System.out.println(balanced);
->>>>>>> 5de344e2dbf25097a2d3c34811207821645562f6
 	}
 }
