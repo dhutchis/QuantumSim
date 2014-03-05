@@ -43,6 +43,14 @@ public class OpTest {
 	}
 	
 	@Test
+	public void test2H() {
+		FieldVector<Complex> vec = QuantumUtil.buildVector(0, 1);
+		FieldVector<Complex> outvec = new H().apply(vec);
+		FieldVector<Complex> testvec = QuantumUtil.buildVector(1/Math.sqrt(2),-1/Math.sqrt(2));
+		assertTrue( QuantumUtil.isApproxEqualVector(outvec, testvec)  );
+	}
+	
+	@Test
 	public void testToffoli() {
 		FieldVector<Complex> v, ve, vout;
 		//v = QuantumUtil.normalizeVector( QuantumUtil.buildVector(1,2,3,4,5,6,7,8) );

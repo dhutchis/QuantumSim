@@ -6,10 +6,12 @@ import org.apache.commons.math3.linear.ArrayFieldVector;
 import org.apache.commons.math3.linear.FieldVector;
 
 import qclib.Operator;
+import qclib.QubitRegister;
+import qclib.op.CNOT;
+import qclib.op.H;
+import qclib.util.QuantumUtil;
 
 public class Deutsch {
-
-	
 	/**
 	 * on arity qubits total. --- x is all but last qubit, y is last qubit
 	 * 
@@ -35,8 +37,6 @@ public class Deutsch {
 					int idxin = (x << 1) | y;
 					int idxout = (x << 1) | (y ^ (funct.apply(x) ? 1 : 0));
 					
-					outvec.setEntry( idxout,  outvec.getEntry(idxout).add(invec.getEntry(idxin)) );
-					
 				}
 			
 			return outvec;
@@ -50,12 +50,54 @@ public class Deutsch {
 	 * @param funct
 	 * @return true if balanced, false if constant
 	 */
-	public boolean doDeutsch(FunctionDeutsch funct) {
-		return false;
+	public boolean doDeutschJozsa(int arity, FunctionDeutsch funct) {
+		assert arity > 1;
+
+		QubitRegister qr = new QubitRegister(arity);
+		//Build the quantum register with the first bit in state |1> and the rest in state |0>
+		qr.setAmps( QuantumUtil.buildVector(0,1) , 0);
+		for(int i=1;i<qr.getNumqubits();i++){
+			qr.setAmps( QuantumUtil.buildVector(1,0), i);
+		}
+		System.out.print("v0: ");
+		System.out.println(QuantumUtil.printVector(qr.getAmps(0,1)));
+		
+		//Apply H gate to every qubit
+		for(int i=0;i<qr.getNumqubits();i++){
+			qr.doOp(new H(), i);
+		}
+		System.out.print("v1: ");
+		System.out.println(QuantumUtil.printVector(qr.getAmps(0,1)));
+		
+		SpecialF special = new SpecialF(funct, arity);
+		//Apply function
+		qr.doOp(special, 0, 1);
+		System.out.print("v2: ");
+		System.out.println(QuantumUtil.printVector(qr.getAmps(0,1)));
+		
+		//Apply H gate to all qubits but first one
+		for(int i=1;i<qr.getNumqubits();i++){
+			qr.doOp(new H(), i);
+		}
+		System.out.print("v3: ");
+		System.out.println(QuantumUtil.printVector(qr.getAmps(0,1)));
+		
+		return qr.measure(1);
 	}
 	
 	public static void main(String[] args) {
-		// run Deutsch on something
+		Deutsch d = new Deutsch();
+		int arity = 2;
+		boolean balanced = d.doDeutschJozsa(arity, new FunctionDeutsch(){
+			public boolean apply(int argument){
+				if(argument == 0){
+					return false;
+				}
+				return false;
+			}
+		});
+		
+		System.out.println(balanced);
 	}
 	
 	// TODO: test Deutsch
