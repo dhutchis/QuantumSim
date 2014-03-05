@@ -94,14 +94,18 @@ public class Deutsch {
 		Deutsch d = new Deutsch();
 		int arity = 2;
 		boolean balanced = d.doDeutschJozsa(arity, new FunctionDeutsch(){
+			//Method that has to be either balanced or constant
 			public boolean apply(int argument){
 				if(argument == 0){
 					return false;
 				}
-				return true;
+				return false;
 			}
 		});
-		
-		System.out.println("Balanced: "+balanced);
+		if(balanced){
+			System.out.println("Balanced");
+		} else {
+			System.out.println("Constant");
+		}
 	}
 }
