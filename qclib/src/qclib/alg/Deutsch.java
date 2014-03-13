@@ -7,7 +7,6 @@ import org.apache.commons.math3.linear.FieldVector;
 
 import qclib.Operator;
 import qclib.QubitRegister;
-import qclib.op.CNOT;
 import qclib.op.H;
 import qclib.util.QuantumUtil;
 
@@ -60,32 +59,28 @@ public class Deutsch {
 		for(int i=1;i<qr.getNumqubits();i++){
 			qr.setAmps( QuantumUtil.buildVector(1,0), i);
 		}
-		System.out.print("v0: ");
-		System.out.println(QuantumUtil.printVector(qr.getAmps(0,1)));
+		System.out.print("v0: "+qr.printBits(0,1));
 		
 		//Apply H gate to every qubit
 		for(int i=0;i<qr.getNumqubits();i++){
 			qr.doOp(new H(), i);
 		}
-		System.out.print("v1: ");
-		System.out.println(QuantumUtil.printVector(qr.getAmps(0,1)));
+		System.out.print("\nv1: "+qr.printBits(0,1));
 		
 		SpecialF special = new SpecialF(funct, arity);
 		
-		//TODO generalise to
-		//qr.doOp(special, [all qubits from 0 to qr.getNumqubits()-1] );
+		// generalized to arity qubits
+		qr.doOp(special, QuantumUtil.makeConsecutiveIntArray(0, arity) );
 
 		//Apply function
-		qr.doOp(special, 0, 1);
-		System.out.print("v2: ");
-		System.out.println(QuantumUtil.printVector(qr.getAmps(0,1)));
+		//qr.doOp(special, 0, 1); old version
+		System.out.print("\nv2: "+qr.printBits(0,1));
 		
 		//Apply H gate to all qubits but first one
 		for(int i=1;i<qr.getNumqubits();i++){
 			qr.doOp(new H(), i);
 		}
-		System.out.print("v3: ");
-		System.out.println(QuantumUtil.printVector(qr.getAmps(0,1)));
+		System.out.print("\nv3: "+qr.printBits(0,1));
 		
 		//Measurement
 		//"If Alice measures all 0s then the function is constant;
@@ -93,30 +88,56 @@ public class Deutsch {
 		boolean balanced = false;		
 		for(int i=1;i<qr.getNumqubits();i++){
 			if(qr.measure(i)!=false){
+				System.out.print(qr.printBits(0,1));
 				balanced = true;
+				break;
 			}
+			System.out.print(qr.printBits(0,1));
 		}
 		
 		return balanced;
 	}
 	
+	/** constant test function for any number of qubits */
+	private static class FunDeutchNC implements FunctionDeutsch {
+		@Override
+		public boolean apply(int argument){
+			return true;
+		}
+	}
+	
+	/** balanced test function for any number of qubits */
+	private static class FunDeutchNB implements FunctionDeutsch {
+		@Override
+		public boolean apply(int argument){
+			return argument % 2 == 0; // returns true for even arguments, false for odd arguments 
+		}
+	}
+	
 	public static void main(String[] args) {
 		Deutsch d = new Deutsch();
-		int arity = 2;
-		boolean balanced = d.doDeutschJozsa(arity, new FunctionDeutsch(){
-			//Method that has to be either balanced or constant
-			public boolean apply(int argument){
-				if(argument == 0){
-					return false;
-				}
-				return false;
-			}
-		});
+		boolean balanced = d.doDeutschJozsa(2, new FunDeutchNC());
+		assert !balanced;
 		
-		if(balanced){
+		balanced = d.doDeutschJozsa(2, new FunDeutchNB());
+		assert balanced;
+		
+		balanced = d.doDeutschJozsa(3, new FunDeutchNC());
+		assert !balanced;
+		
+		balanced = d.doDeutschJozsa(3, new FunDeutchNB());
+		assert balanced;
+		
+		balanced = d.doDeutschJozsa(5, new FunDeutchNC());
+		assert !balanced;
+		
+		balanced = d.doDeutschJozsa(5, new FunDeutchNB());
+		assert balanced;
+		
+		/*if(balanced){
 			System.out.println("Balanced");
 		} else {
 			System.out.println("Constant");
-		}
+		}*/
 	}
 }

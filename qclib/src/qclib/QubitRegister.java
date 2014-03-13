@@ -290,7 +290,7 @@ public class QubitRegister {
 		int[] targetbits = new int[qubits.length];
 		for (int i=0; i<qubits.length; i++) {
 			targetbits[i] = qubitToQC[qubits[i]].getFirst(); // the position of qubit[i] in qcTarget
-			assert qubitToQC[i].getSecond() == qcTarget;
+			assert qubitToQC[qubits[i]].getSecond() == qcTarget;
 		}
 		
 		// translate from indices on qubits in the QR to indices on qubits in the QC
@@ -412,7 +412,7 @@ public class QubitRegister {
 			else
 				i++;
 		}
-		System.out.println(Arrays.toString(mask)+" should be an array excluding "+bitInQC);
+		//System.out.println(Arrays.toString(mask)+" should be an array excluding "+bitInQC);
 		
 		Set<int[]> idxset = QuantumUtil.translateIndices(qc.getNumbits(), mask);
 		assert idxset.size() == 2;
