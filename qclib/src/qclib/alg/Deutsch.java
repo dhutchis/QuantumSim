@@ -134,6 +134,7 @@ public class Deutsch {
 		balanced = d.doDeutschJozsa(5, new FunDeutchNB());
 		assert balanced;
 		
+		//TODO test file
 		/*if(balanced){
 			System.out.println("Balanced");
 		} else {
