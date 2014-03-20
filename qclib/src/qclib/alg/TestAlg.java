@@ -18,7 +18,7 @@ public class TestAlg {
 
 	public static void main(String[] args) {
 		QubitRegister qr = new QubitRegister(15);
-		qr.setAmps(QuantumUtil.buildVector(0, 1, 2, 3, 4, 5, 6, 7), 10, 11, 12); // qubit 10 is (3/5)|0> + (4/5)|1>
+		/*qr.setAmps(QuantumUtil.buildVector(0, 1, 2, 3, 4, 5, 6, 7), 10, 11, 12); // qubit 10 is (3/5)|0> + (4/5)|1>
 		System.out.println(qr.printBits(10,11,12));
 		//System.out.println(QuantumUtil.printVector(qr.getAmps(10,11,12)));
 		
@@ -42,8 +42,24 @@ public class TestAlg {
 			QuantumUtil.indexGet(orig, indicesB, vecB);
 		}
 		System.out.println(QuantumUtil.printVector(vecA));
-		System.out.println(QuantumUtil.printVector(vecB));
+		System.out.println(QuantumUtil.printVector(vecB));*/
 		
+		qr.setAmps(QuantumUtil.buildVector(0, 1, 2, 3, 4, 5, 6, 7,8,9,10,11,12,13,14,15), 10, 11, 12,13); 
+		System.out.println(qr.printBits(10,11,12,13));
+		qr.doOp(new Operator(4) {
+
+			@Override
+			protected FieldVector<Complex> myApply(FieldVector<Complex> invec) {
+				invec.setEntry(2, invec.getEntry(2).negate() );
+				return invec;
+			}
+			
+		}, 10,11,12,13);
+		System.out.println("after negating entry #2");
+		System.out.println(qr.printBits(10,11,12,13));
+		FieldVector<Complex> amps = qr.getAmps(10,11,12,13);
+		if (amps.getEntry(2).getReal() != -2)
+			amps = amps;
 	}
 	
 	

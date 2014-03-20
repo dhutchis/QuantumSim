@@ -358,7 +358,7 @@ public class QubitRegister {
 		}
 		
 		// do the reordering and update the data structures
-		qcTarget.reorderBits(map);
+		qcTarget.reorderBits(invertMap(map)); // map is inverted for setting
 		for (int i=0; i < qubitsInTarget.length; i++) {
 			int bit = qubitsInTarget[i];
 			qubitToQC[bit] = new Pair<Integer,QubitContainer>(map[i],qcTarget);
@@ -375,6 +375,13 @@ public class QubitRegister {
 		return sb.toString();
 	}
 	
+	
+	private int[] invertMap(int[] map) {
+		int[] newmap = new int[map.length];
+		for (int i=0; i<map.length; i++)
+			newmap[map[i]] = i;
+		return newmap;
+	}
 	
 	
 	

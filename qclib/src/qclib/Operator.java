@@ -1,5 +1,6 @@
 package qclib;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Set;
 
@@ -230,6 +231,7 @@ public abstract class Operator {
 		// for each set of indices indexing into this.data
 		for (int[] indices : indexset) {
 			// get the amplitudes from this.data into vec, do the operator on vec to get a new vec, and set the new amplitudes from vec into this.data 
+			//System.err.println("targetbits: "+Arrays.toString(targetbits));
 			QuantumUtil.indexGet(datavec, indices, vec);
 			vec = this.myApply(vec);
 			QuantumUtil.indexSet(datavec, indices, vec);
