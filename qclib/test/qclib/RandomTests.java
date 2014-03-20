@@ -80,7 +80,10 @@ public class RandomTests {
 		qr.couple(10,11);
 		//System.out.println(qr.printBits(10,11));
 		
-		qr.doOp(new CNOT(),	10, 11); // target bit 10, control bit 11
+		//qr.doOp(new CNOT(),	10, 11); // target bit 10, control bit 11
+		{FieldVector<Complex> tmp = qr.getAmps(10,11); // identical operation for testing
+		new CNOT().applyTo(2, tmp, 0,1);
+		qr.setAmps(tmp, 10, 11);}
 		//System.out.println(qr.printBits(10,11));
 		
 		boolean meas0 = qr.measure(10);

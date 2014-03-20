@@ -22,16 +22,20 @@ public class GroverGoingWrong {
 		public SpecialF(FunctionDeutsch funct, int arity) {
 			super(arity);
 			assert arity >= 2;
-			this.funct = funct;
+			this.funct = funct; // funct is never used !!!
 		}
 
 		@Override
 		protected FieldVector<Complex> myApply(FieldVector<Complex> invec) {
 			FieldVector<Complex> outvec = new ArrayFieldVector<Complex>(ComplexField.getInstance(), invec.getDimension());
-			outvec.set(Complex.ZERO);
+			//outvec.set(Complex.ZERO);
 			
 			for (int x = 0; x < 1<<this.getArity(); x++) {
-				outvec.setEntry( x,  invec.getEntry(x).multiply(Math.pow(-1, (x==2) ? 1 : 0)) );
+				// only negate 2nd entry (starting from index 0)
+				if (x == 2)
+					outvec.setEntry(x, invec.getEntry(x).negate());
+				else
+					outvec.setEntry(x, invec.getEntry(x));
 			}
 			
 			return outvec;
@@ -60,7 +64,7 @@ public class GroverGoingWrong {
 		for(int i=0;i<qr.getNumqubits();i++){qr.doOp(new H(), i);}
 		
 		//Perform Grover iterations
-		System.out.print("\nGrover iteration: "+qr.printBits(QuantumUtil.makeConsecutiveIntArray(0, arity)));
+		System.out.print("\nGrover iteration: \n"+qr.printBits(QuantumUtil.makeConsecutiveIntArray(0, arity)));
 			
 		SpecialF search = new SpecialF(funct, arity);
 		
@@ -69,19 +73,20 @@ public class GroverGoingWrong {
 		qr.doOp(search, QuantumUtil.makeConsecutiveIntArray(0, arity));
 		
 		/**
-		 * Output should be all the states being in the state ( 0,25 , 0    i)
-		 * apart from |0010>=(-0,25 ,-0    i)
+		 * Output should be all the states being in the state ( 0.25 , 0    i)
+		 * apart from |0010>=(-0.25 ,-0    i)
 		 * However, about 1 in 20 runs of the program gives:
-		 * |0010>=( 0,25 , 0    i)
-		 * |1000>=(-0,25 ,-0    i)
+		 * |0010>=( 0.25 , 0    i)
+		 * |1000>=(-0.25 ,-0    i)
 		 */
 		
-		System.out.print("\nAfter setting solution to negative "+qr.printBits(QuantumUtil.makeConsecutiveIntArray(0, arity)));
+		System.out.print("\nAfter setting solution to negative \n"+qr.printBits(QuantumUtil.makeConsecutiveIntArray(0, arity)));
 		
 		return 1;
 	}
 	
-	/** constant test function for any number of qubits */
+	/** returns true when passed 2?  otherwise false */
+	// Where is this class used ??
 	private static class Find2 implements FunctionDeutsch {
 
 		

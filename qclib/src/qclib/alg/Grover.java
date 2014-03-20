@@ -31,7 +31,11 @@ public class Grover {
 			outvec.set(Complex.ZERO);
 			
 			for (int x = 0; x < 1<<this.getArity(); x++) {
-				outvec.setEntry( x,  invec.getEntry(x).multiply(Math.pow(-1, (x==2) ? 1 : 0)) );
+				// only negate 2nd entry (starting from index 0)
+				if (x == 2)
+					outvec.setEntry(x, invec.getEntry(x).negate());
+				else
+					outvec.setEntry(x, invec.getEntry(x));
 			}
 			
 			return outvec;
