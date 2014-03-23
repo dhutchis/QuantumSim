@@ -232,6 +232,9 @@ public class QubitRegister {
 					}
 			}
 			
+			// ! change carried over from printBits - reversed order
+			neworder = invertMap(neworder);
+			
 			Set<int[]> idxset = QuantumUtil.translateIndices(qubits.length, neworder);
 			assert idxset.size() == 1;
 			int[] indices = idxset.iterator().next();

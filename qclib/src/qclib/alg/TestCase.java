@@ -1,15 +1,11 @@
 package qclib.alg;
 
 import org.apache.commons.math3.complex.Complex;
-import org.apache.commons.math3.complex.ComplexField;
-import org.apache.commons.math3.linear.ArrayFieldVector;
 import org.apache.commons.math3.linear.FieldVector;
 
-import qclib.Operator;
 import qclib.QubitRegister;
 import qclib.op.H;
 import qclib.util.QuantumUtil;
-import qclib.util.CartesianRepresentation;
 
 public class TestCase {
 	
@@ -58,7 +54,7 @@ public class TestCase {
 		System.out.println(this.qr.printBits(QuantumUtil.makeConsecutiveIntArray(0, this.arity+1)));
 		
 		for(int i=0;i<(1<<this.arity+1);i=i+2){
-			if(this.intArrayContains((int)Math.floor(i/2), this.solutions)){
+			if(intArrayContains((int)Math.floor(i/2), this.solutions)){
 				yc += temp1.getEntry(i).getReal();
 			} else {
 				xc += temp1.getEntry(i).getReal();
