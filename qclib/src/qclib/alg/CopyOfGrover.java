@@ -11,7 +11,7 @@ import qclib.op.H;
 import qclib.util.QuantumUtil;
 import qclib.util.CartesianRepresentation;
 
-public class Grover {
+public class CopyOfGrover {
 	
 	private QubitRegister qr;
 	private CartesianRepresentation visualisation;
@@ -36,34 +36,36 @@ public class Grover {
 			FieldVector<Complex> outvec = new ArrayFieldVector<Complex>(ComplexField.getInstance(), invec.getDimension());
 			outvec.set(Complex.ZERO);
 			
-			for (int x = 0; x < 1<<this.getArity(); x++) {
-				if (this.funct.apply(x))
-					outvec.setEntry(x, invec.getEntry(x).negate());
-				else
-					outvec.setEntry(x, invec.getEntry(x));
-			}
+			for (int x = 0; x < 1<<(this.getArity()-1); x++)
+				for (int y=0; y <= 1; y++) {
+					
+					int idxin = (x << 1) | y;
+					int idxout = (x << 1) | (y ^ (funct.apply(x) ? 1 : 0));
+					
+					outvec.setEntry( idxout,  outvec.getEntry(idxout).add(invec.getEntry(idxin)) );
+				}
 			
 			return outvec;
 		}
 		
 	}
 	
-	public Grover(){
+	public CopyOfGrover(){
 		this.setVisualisation(false);
 		this.setVisualisationDelayTime(500);
 	}
 	
-	public Grover(boolean visualise){
+	public CopyOfGrover(boolean visualise){
 		this.setVisualisation(visualise);
 		this.setVisualisationDelayTime(500);
 	}
 	
-	public Grover(int visualisationDelayTime){
+	public CopyOfGrover(int visualisationDelayTime){
 		this.setVisualisation(true);
 		this.setVisualisationDelayTime(visualisationDelayTime);
 	}
 	
-	public Grover(boolean visualise, int visualisationDelayTime){
+	public CopyOfGrover(boolean visualise, int visualisationDelayTime){
 		this.setVisualisation(visualise);
 		this.setVisualisationDelayTime(visualisationDelayTime);
 	}
@@ -115,13 +117,13 @@ public class Grover {
 		double xc = 0;
 		double yc = 0;
 		
-		FieldVector<Complex> temp1 = this.qr.getAmps(QuantumUtil.makeConsecutiveIntArray(0, this.arity));
+		FieldVector<Complex> temp1 = this.qr.getAmps(QuantumUtil.makeConsecutiveIntArray(0, this.arity+1));
 		
-		for(int i=0;i<(1<<this.arity);i++){
-			if(this.intArrayContains(i, this.solutions)){
-				yc += temp1.getEntry(i).getReal();
+		for(int i=0;i<(1<<this.arity+1);i=i+2){
+			if(this.intArrayContains((int)Math.floor(i/2), this.solutions)){
+				yc += Math.sqrt(2)*temp1.getEntry(i).getReal();
 			} else {
-				xc += temp1.getEntry(i).getReal();
+				xc += Math.sqrt(2)*temp1.getEntry(i).getReal();
 			}
 		}
 		
@@ -130,6 +132,7 @@ public class Grover {
 		
 		this.visualisation.vector.setComponents(xc, yc);
 		if(firstTime){
+			System.out.println(xc + " " + yc);
 			this.visualisation.initialStateLine.setComponents(xc, yc);
 		}
 		this.visualisation.repaint();
@@ -138,52 +141,56 @@ public class Grover {
 	}
 	
 	/**
+	 * @throws InterruptedException 
 	 * @throws Exception 
 	 */
-	public long doGrover(final int arity, FunctionFilter funct) throws Exception {
+	public long doGrover(final int arity, FunctionFilter funct) throws IllegalArgumentException, InterruptedException {
 		assert arity > 1;
 		
 		this.arity = arity;
 		
 		if(this.solutions == null){
-			throw new Exception("Solutions list not provided");
+			throw new IllegalArgumentException("Solutions list not provided");
 		}
 		
 		if(this.solutions.length >= (1<<this.arity)/2){
 			return doGrover(arity+1, funct);
 		}
 		
-		this.qr = new QubitRegister(arity);
+		this.qr = new QubitRegister(arity+1);
 		
-		//Build the quantum register with all the bits |0>
-		for(int i=0;i<this.qr.getNumqubits();i++){
+		//Build the quantum register with first bit |1> and then 'arity' bits |0>
+		this.qr.setAmps( QuantumUtil.buildVector(0,1), 0);
+		for(int i=1;i<this.qr.getNumqubits();i++){
 			this.qr.setAmps( QuantumUtil.buildVector(1,0), i);
 		}
 		
 		//Apply H gate to every qubit
 		for(int i=0;i<this.qr.getNumqubits();i++){this.qr.doOp(new H(), i);}
 		
+		this.qr.couple(QuantumUtil.makeConsecutiveIntArray(0, this.arity+1));
+		
 		this.visualiseGrover(true);
 		
-		SpecialF search = new SpecialF(funct, arity);
+		SpecialF search = new SpecialF(funct, arity+1);
 		
 		//Perform Grover iterations
 		for(int j=1;j<Math.ceil(Math.PI/4*Math.sqrt((1 << arity)/(double) this.solutions.length));j++){
-			
-			this.qr.doOp(search, QuantumUtil.makeConsecutiveIntArray(0, arity));
+					
+			this.qr.doOp(search, QuantumUtil.makeConsecutiveIntArray(0, arity+1));
 			
 			this.visualiseGrover(false);
 			
-			for(int i=0;i<this.qr.getNumqubits();i++){this.qr.doOp(new H(), i);}
+			for(int i=1;i<this.qr.getNumqubits();i++){this.qr.doOp(new H(), i);}
 			
-			FieldVector<Complex> temp2 = this.qr.getAmps(QuantumUtil.makeConsecutiveIntArray(0, arity));			
-			for(int i=1;i<(1<<arity);i++){
+			FieldVector<Complex> temp2 = this.qr.getAmps(QuantumUtil.makeConsecutiveIntArray(0, arity+1));			
+			for(int i=2;i<(1<<arity+1);i++){
 				temp2.setEntry(i, temp2.getEntry(i).negate());
 			}
 			
-			this.qr.setAmps(temp2, QuantumUtil.makeConsecutiveIntArray(0, arity));
+			this.qr.setAmps(temp2, QuantumUtil.makeConsecutiveIntArray(0, arity+1));
 			
-			for(int i=0;i<this.qr.getNumqubits();i++){this.qr.doOp(new H(), i);}
+			for(int i=1;i<this.qr.getNumqubits();i++){this.qr.doOp(new H(), i);}
 			
 			this.visualiseGrover(false);
 		}
@@ -192,9 +199,9 @@ public class Grover {
 		
 		//Measurement
 		long result = 0;
-		for(int i=0;i<arity;i++){
+		for(int i=1;i<arity;i++){
 			if(this.qr.measure(i)){
-				result += (1 << i);
+				result += (1 << (i-1));
 			}
 		}
 		return result;
@@ -217,7 +224,7 @@ public class Grover {
 	}
 	
 	public static void main(String[] args) throws InterruptedException {
-		Grover d = new Grover(true);
+		CopyOfGrover d = new CopyOfGrover(true);
 		
 		int[] solutions = new int[1];
 		solutions[0] = 0;
@@ -227,11 +234,7 @@ public class Grover {
 		
 		long result;
 		
-		try {
-			result = d.doGrover(3, new Find(solutions));
-			System.out.println("Result: " + result);
-		} catch (Exception e) {
-			System.err.println(e.toString());
-		}
+		result = d.doGrover(3, new Find(solutions));
+		System.out.println("Result: " + result);
 	}
 }

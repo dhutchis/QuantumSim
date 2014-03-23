@@ -17,9 +17,9 @@ public class Deutsch {
 	 */
 	static class SpecialF extends Operator {
 
-		private FunctionDeutsch funct;
+		private FunctionFilter funct;
 		
-		public SpecialF(FunctionDeutsch funct, int arity) {
+		public SpecialF(FunctionFilter funct, int arity) {
 			super(arity);
 			assert arity >= 2;
 			this.funct = funct;
@@ -50,7 +50,7 @@ public class Deutsch {
 	 * @param funct
 	 * @return true if balanced, false if constant
 	 */
-	public boolean doDeutschJozsa(int arity, FunctionDeutsch funct) {
+	public boolean doDeutschJozsa(int arity, FunctionFilter funct) {
 		assert arity > 1;
 
 		QubitRegister qr = new QubitRegister(arity);
@@ -99,7 +99,7 @@ public class Deutsch {
 	}
 	
 	/** constant test function for any number of qubits */
-	private static class FunDeutchNC implements FunctionDeutsch {
+	private static class FunDeutchNC implements FunctionFilter {
 		@Override
 		public boolean apply(int argument){
 			return true;
@@ -107,7 +107,7 @@ public class Deutsch {
 	}
 	
 	/** balanced test function for any number of qubits */
-	private static class FunDeutchNB implements FunctionDeutsch {
+	private static class FunDeutchNB implements FunctionFilter {
 		@Override
 		public boolean apply(int argument){
 			return argument % 2 == 0; // returns true for even arguments, false for odd arguments 
