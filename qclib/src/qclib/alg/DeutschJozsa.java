@@ -10,10 +10,20 @@ import qclib.QubitRegister;
 import qclib.op.H;
 import qclib.util.QuantumUtil;
 
-public class Deutsch {
+/**
+ * Class implementing Deutsch-Jozsa algorithm which is a generalization of Deutsch's algorithm.
+ * For arity 2 system it reduces to Deutsch's algorithm.
+ * Using just one evaluation of the function it recognises if the function provided is constant or balanced.
+ * It is assumed that the function provided is either constant or balanced.
+ */
+public class DeutschJozsa {
 	/**
-	 * on arity qubits total. --- x is all but last qubit, y is last qubit
-	 * 
+	 * Algorithm operates on arity qubits in total.
+	 * x is all but last qubit, y is last qubit.
+	 */
+	
+	/**
+	 * Implementing function provided as an operator changing the last qubit y.
 	 */
 	static class SpecialF extends Operator {
 
@@ -46,41 +56,38 @@ public class Deutsch {
 	
 	
 	/**
+	 * Performs Deutsch-Jozsa algorithm.
+	 * For arity 2 system it reduces to Deutsch's algorithm.
 	 * Always works.
-	 * @param funct
+	 * @param arity - the number of the qubits used for as the arguments for the function
+	 * @param funct - function which is assumed to be either constant or balanced
 	 * @return true if balanced, false if constant
 	 */
 	public boolean doDeutschJozsa(int arity, FunctionFilter funct) {
 		assert arity > 1;
 
 		QubitRegister qr = new QubitRegister(arity);
+		
 		//Build the quantum register with the first bit in state |1> and the rest in state |0>
 		qr.setAmps( QuantumUtil.buildVector(0,1) , 0);
 		for(int i=1;i<qr.getNumqubits();i++){
 			qr.setAmps( QuantumUtil.buildVector(1,0), i);
 		}
-		System.out.print("v0: "+qr.printBits(0,1));
 		
 		//Apply H gate to every qubit
 		for(int i=0;i<qr.getNumqubits();i++){
 			qr.doOp(new H(), i);
 		}
-		System.out.print("\nv1: "+qr.printBits(0,1));
 		
 		SpecialF special = new SpecialF(funct, arity);
 		
-		// generalized to arity qubits
+		//Performs the evaluation of the function
 		qr.doOp(special, QuantumUtil.makeConsecutiveIntArray(0, arity) );
-
-		//Apply function
-		//qr.doOp(special, 0, 1); old version
-		System.out.print("\nv2: "+qr.printBits(0,1));
 		
 		//Apply H gate to all qubits but first one
 		for(int i=1;i<qr.getNumqubits();i++){
 			qr.doOp(new H(), i);
 		}
-		System.out.print("\nv3: "+qr.printBits(0,1));
 		
 		//Measurement
 		//"If Alice measures all 0s then the function is constant;
@@ -88,11 +95,9 @@ public class Deutsch {
 		boolean balanced = false;		
 		for(int i=1;i<qr.getNumqubits();i++){
 			if(qr.measure(i)!=false){
-				System.out.print(qr.printBits(0,1));
 				balanced = true;
 				break;
 			}
-			System.out.print(qr.printBits(0,1));
 		}
 		
 		return balanced;
@@ -115,7 +120,8 @@ public class Deutsch {
 	}
 	
 	public static void main(String[] args) {
-		Deutsch d = new Deutsch();
+		DeutschJozsa d = new DeutschJozsa();
+		
 		boolean balanced = d.doDeutschJozsa(2, new FunDeutchNC());
 		assert !balanced;
 		
@@ -133,12 +139,5 @@ public class Deutsch {
 		
 		balanced = d.doDeutschJozsa(5, new FunDeutchNB());
 		assert balanced;
-		
-		//TODO test file
-		/*if(balanced){
-			System.out.println("Balanced");
-		} else {
-			System.out.println("Constant");
-		}*/
 	}
 }

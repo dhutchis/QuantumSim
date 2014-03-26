@@ -11,7 +11,7 @@ import qclib.op.H;
 import qclib.util.QuantumUtil;
 import qclib.util.CartesianRepresentation;
 
-public class Grover {
+public class GroverWithoutOracleWorkingQubit {
 	
 	private QubitRegister qr;
 	private CartesianRepresentation visualisation;
@@ -48,22 +48,22 @@ public class Grover {
 		
 	}
 	
-	public Grover(){
+	public GroverWithoutOracleWorkingQubit(){
 		this.setVisualisation(false);
 		this.setVisualisationDelayTime(500);
 	}
 	
-	public Grover(boolean visualise){
+	public GroverWithoutOracleWorkingQubit(boolean visualise){
 		this.setVisualisation(visualise);
 		this.setVisualisationDelayTime(500);
 	}
 	
-	public Grover(int visualisationDelayTime){
+	public GroverWithoutOracleWorkingQubit(int visualisationDelayTime){
 		this.setVisualisation(true);
 		this.setVisualisationDelayTime(visualisationDelayTime);
 	}
 	
-	public Grover(boolean visualise, int visualisationDelayTime){
+	public GroverWithoutOracleWorkingQubit(boolean visualise, int visualisationDelayTime){
 		this.setVisualisation(visualise);
 		this.setVisualisationDelayTime(visualisationDelayTime);
 	}
@@ -217,7 +217,7 @@ public class Grover {
 	}
 	
 	public static void main(String[] args) throws InterruptedException {
-		Grover d = new Grover(true);
+		GroverWithoutOracleWorkingQubit d = new GroverWithoutOracleWorkingQubit(true);
 		
 		int[] solutions = new int[1];
 		solutions[0] = 0;
