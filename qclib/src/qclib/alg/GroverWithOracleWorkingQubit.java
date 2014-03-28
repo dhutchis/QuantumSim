@@ -251,17 +251,15 @@ public class GroverWithOracleWorkingQubit {
 	public static void main(String[] args) throws InterruptedException {
 		GroverWithOracleWorkingQubit d = new GroverWithOracleWorkingQubit(true);
 		
-		int[] solutions = new int[3];
+		int[] solutions = new int[1];
 		solutions[0] = 0;
-		solutions[1] = 1;
-		solutions[2] = 2;
 		
 		d.setSolutions(solutions);
 		d.setVisualisationDelayTime(300);
 		
 		long result;
 		
-		result = d.doGrover(10, new Find(solutions));
+		result = d.doGrover(5, new Find(solutions));
 		System.out.println("Result: " + result);
 	}
 }
