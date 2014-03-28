@@ -1,11 +1,8 @@
 package qclib;
 
 import org.apache.commons.math3.complex.Complex;
-import org.apache.commons.math3.linear.BlockFieldMatrix;
 import org.apache.commons.math3.linear.FieldMatrix;
 import org.apache.commons.math3.linear.FieldVector;
-
-import qclib.util.QuantumUtil;
 
 public class MatrixOperator extends Operator {
 	

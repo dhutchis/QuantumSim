@@ -66,7 +66,6 @@ public class OpTest {
 		vout = ComboOps.toffoli().apply(v);
 		assertTrue( "result="+QuantumUtil.printVector(vout)+"\nexpected="+QuantumUtil.printVector(ve), 
 				QuantumUtil.isApproxEqualVector(ve, vout)  );
-		// Todo: currently fails...
 	}
 	
 	

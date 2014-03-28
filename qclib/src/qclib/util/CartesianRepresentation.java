@@ -10,6 +10,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 public class CartesianRepresentation extends JFrame {
+	private static final long serialVersionUID = 1076414933036220156L;
 	private Cartesian cartesian;
 	public Vector vector;
 	public InitialStateLine initialStateLine;
@@ -40,7 +41,9 @@ public class CartesianRepresentation extends JFrame {
 
     public class Cartesian extends JPanel {
     	
-    	@Override
+    	private static final long serialVersionUID = -8607636342651443519L;
+
+		@Override
         protected void paintComponent(Graphics g) {
     		super.paintComponent(g);
             Graphics2D g2d = (Graphics2D) g;
@@ -55,7 +58,8 @@ public class CartesianRepresentation extends JFrame {
     }
 
     public class Vector extends JPanel{
-        protected double x, y;
+		private static final long serialVersionUID = -137901104103312065L;
+		protected double x, y;
         
         public Vector(double x, double y){
         	this.setComponents(x, y);
@@ -82,7 +86,9 @@ public class CartesianRepresentation extends JFrame {
     
     public class InitialStateLine extends Vector{
     	
-    	public InitialStateLine(double x, double y) {
+		private static final long serialVersionUID = 6062353763815027459L;
+
+		public InitialStateLine(double x, double y) {
 			super(x, y);
 		}
 

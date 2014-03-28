@@ -5,6 +5,10 @@ import java.util.BitSet;
 import java.util.Iterator;
 import java.util.List;
 
+/**
+ * Note: this class is for use in the event we decide to go with BitSet representations.  
+ * The advantage is arbitrary numbers of qubits (> 64).
+ */
 public class BitSetUtil {
 
 	/** Only static methods; don't make an instance. */
@@ -140,7 +144,7 @@ public class BitSetUtil {
 	}
 	
 //	
-//	/** Iterates over the singe int's inside the list of single bits. */
+//	/** Iterates over the single ints inside the list of single bits. */
 //	public static ListIterator<Integer> iterateOverSingleBitList(List<BitSet> l) {
 //		checkIsSingleBitList(l);
 //		final ListIterator<BitSet> bsiter = l.listIterator();

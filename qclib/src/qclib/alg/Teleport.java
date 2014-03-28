@@ -35,13 +35,10 @@ public class Teleport {
 		System.out.println("Alice performs CNOT on srcBit and her half of the bellBits, and then H on her half of the bellBits...");
 		qr.doOp(new CNOT(), 1, 0);
 		System.out.println("qr after CNOT01: "+qr.printBits(2,1,0));
-		//System.out.println("qr after CNOT01: "+qr);
 		qr.doOp(new H(), 0);
-		//System.out.println("qr after CNOT01 and H: "+QuantumUtil.printVector(qr.getAmps(2,1,0)));
 		System.out.println("qr after CNOT01 and H:\n"+qr.printBits(2,1,0));
 		
 		boolean m0 = qr.measure(0);
-		//System.out.println("qr after measure bit0="+m0+" : "+QuantumUtil.printVector(qr.getAmps(2,1,0)));
 		boolean m1 = qr.measure(1);
 		System.out.println("Measurement: srcBit="+m0+"; bellBit1="+m1);
 		System.out.println("qr after measurment:\n"+qr.printBits(2,1,0) );
@@ -70,6 +67,6 @@ public class Teleport {
 		QubitRegister qr = new QubitRegister(4);
 		qr.setAmps(QuantumUtil.buildVector(3.0/5, 4.0/5), 0); // state to transmit is (3/5)|0> + (4/5)|1>
 		Teleport.doTeleport(qr, 0, 1, 2);
-		System.out.println(QuantumUtil.printVector(qr.getAmps(2,1,0)));
+		//System.out.println(QuantumUtil.printVector(qr.getAmps(2,1,0)));
 	}
 }

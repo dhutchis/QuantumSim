@@ -118,7 +118,7 @@ public class GroverWithoutOracleWorkingQubit {
 		FieldVector<Complex> temp1 = this.qr.getAmps(QuantumUtil.makeConsecutiveIntArray(0, this.arity));
 		
 		for(int i=0;i<(1<<this.arity);i++){
-			if(this.intArrayContains(i, this.solutions)){
+			if(intArrayContains(i, this.solutions)){
 				yc += temp1.getEntry(i).getReal();
 			} else {
 				xc += temp1.getEntry(i).getReal();

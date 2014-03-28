@@ -115,6 +115,7 @@ public class QubitContainer {
 	/**
 	 * Ensures unit magnitude for sums of squares of amplitudes.
 	 */
+	@SuppressWarnings("unused")
 	private void checkUnit() {
 		//TODO: turn off for performance, along with all the above argument error checking
 		double sumSquares = 0.0;

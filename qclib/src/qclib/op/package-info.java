@@ -1,4 +1,0 @@
-/**
- * 
- */
-package qclib.op;

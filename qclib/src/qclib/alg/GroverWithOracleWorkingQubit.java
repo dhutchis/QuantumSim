@@ -132,7 +132,7 @@ public class GroverWithOracleWorkingQubit {
 		FieldVector<Complex> temp1 = this.qr.getAmps(QuantumUtil.makeConsecutiveIntArray(0, this.arity+1));
 		
 		for(int i=0;i<(1<<this.arity+1);i=i+2){
-			if(this.intArrayContains((int)Math.floor(i/2), this.solutions)){
+			if(intArrayContains((int)Math.floor(i/2), this.solutions)){
 				yc += Math.sqrt(2)*temp1.getEntry(i).getReal();
 			} else {
 				xc += Math.sqrt(2)*temp1.getEntry(i).getReal();
@@ -257,7 +257,7 @@ public class GroverWithOracleWorkingQubit {
 		solutions[2] = 2;
 		
 		d.setSolutions(solutions);
-		d.setVisualisationDelayTime(100);
+		d.setVisualisationDelayTime(300);
 		
 		long result;
 		

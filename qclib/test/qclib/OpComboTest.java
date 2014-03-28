@@ -16,8 +16,6 @@ import org.apache.commons.math3.linear.FieldVector;
 import org.junit.Test;
 
 import qclib.op.CNOT;
-import qclib.op.CV;
-import qclib.op.H;
 import qclib.op.Z;
 import qclib.util.QuantumUtil;
 
