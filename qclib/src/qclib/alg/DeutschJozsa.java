@@ -104,7 +104,7 @@ public class DeutschJozsa {
 	}
 	
 	/** constant test function for any number of qubits */
-	private static class FunDeutchNC implements FunctionFilter {
+	private static class ConstantFunction implements FunctionFilter {
 		@Override
 		public boolean apply(int argument){
 			return true;
@@ -112,7 +112,7 @@ public class DeutschJozsa {
 	}
 	
 	/** balanced test function for any number of qubits */
-	private static class FunDeutchNB implements FunctionFilter {
+	private static class BalancedFunction implements FunctionFilter {
 		@Override
 		public boolean apply(int argument){
 			return argument % 2 == 0; // returns true for even arguments, false for odd arguments 
@@ -121,23 +121,30 @@ public class DeutschJozsa {
 	
 	public static void main(String[] args) {
 		DeutschJozsa d = new DeutschJozsa();
+		boolean balanced;
 		
-		boolean balanced = d.doDeutschJozsa(2, new FunDeutchNC());
+		balanced = d.doDeutschJozsa(2, new ConstantFunction());
 		assert !balanced;
+		System.out.println(!balanced);
 		
-		balanced = d.doDeutschJozsa(2, new FunDeutchNB());
+		balanced = d.doDeutschJozsa(2, new BalancedFunction());
 		assert balanced;
+		System.out.println(balanced);
 		
-		balanced = d.doDeutschJozsa(3, new FunDeutchNC());
+		balanced = d.doDeutschJozsa(3, new ConstantFunction());
 		assert !balanced;
+		System.out.println(!balanced);
 		
-		balanced = d.doDeutschJozsa(3, new FunDeutchNB());
+		balanced = d.doDeutschJozsa(3, new BalancedFunction());
 		assert balanced;
+		System.out.println(balanced);
 		
-		balanced = d.doDeutschJozsa(5, new FunDeutchNC());
+		balanced = d.doDeutschJozsa(5, new ConstantFunction());
 		assert !balanced;
+		System.out.println(!balanced);
 		
-		balanced = d.doDeutschJozsa(5, new FunDeutchNB());
+		balanced = d.doDeutschJozsa(5, new BalancedFunction());
 		assert balanced;
+		System.out.println(balanced);
 	}
 }
