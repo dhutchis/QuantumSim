@@ -27,7 +27,7 @@ public class Grover {
 	private int visualisationDelayTime;
 	
 	/**
-	 * Implementing function provided as an operator changing the last qubit y.
+	 * Implementing function provided as an Oracle.
 	 */
 	static class SpecialF extends Operator {
 
@@ -121,6 +121,7 @@ public class Grover {
 	    return found;
 	}
 
+	//Method used to visualize Grover's algorithm if visualization is switched on
 	public void visualiseGrover(boolean firstTime) throws InterruptedException {
 		if(!this.visualise){
 			return;
@@ -231,6 +232,7 @@ public class Grover {
 		return result;
 	}
 	
+	//Helper function to be implemented in the Oracle
 	private static class Find implements FunctionFilter {
 		private int[] toFind;
 		
@@ -250,15 +252,22 @@ public class Grover {
 	public static void main(String[] args) throws InterruptedException {
 		Grover d = new Grover(true);
 		
-		int[] solutions = new int[1];
+		//Firstly you have to create an array of solutions of the problem
+		int[] solutions = new int[2];
 		solutions[0] = 0;
+		solutions[1] = 1;
 		
+		//then provide the array of solutions to the object for the purpose of visualization
 		d.setSolutions(solutions);
+		//set the delay in microseconds between the steps of visualization
 		d.setVisualisationDelayTime(300);
 		
 		long result;
 		
-		result = d.doGrover(5, new Find(solutions));
+		//Perform Grover algorithm for search space of size _n_ qubits
+		//Implement function looking for the array of _solutions_ inside the Oracle
+		int n = 5;
+		result = d.doGrover(n, new Find(solutions));
 		System.out.println("Result: " + result);
 	}
 }
