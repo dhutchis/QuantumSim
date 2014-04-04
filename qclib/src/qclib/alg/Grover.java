@@ -17,7 +17,7 @@ import qclib.util.CartesianRepresentation;
  * the solutions of the search problem with high probability.
  * The class also incorporates the visualisation of the mechanism of the algorithm.
  */
-public class GroverWithOracleWorkingQubit {
+public class Grover {
 	
 	private QubitRegister qr;
 	private CartesianRepresentation visualisation;
@@ -59,22 +59,22 @@ public class GroverWithOracleWorkingQubit {
 		
 	}
 	
-	public GroverWithOracleWorkingQubit(){
+	public Grover(){
 		this.setVisualisation(false);
 		this.setVisualisationDelayTime(500);
 	}
 	
-	public GroverWithOracleWorkingQubit(boolean visualise){
+	public Grover(boolean visualise){
 		this.setVisualisation(visualise);
 		this.setVisualisationDelayTime(500);
 	}
 	
-	public GroverWithOracleWorkingQubit(int visualisationDelayTime){
+	public Grover(int visualisationDelayTime){
 		this.setVisualisation(true);
 		this.setVisualisationDelayTime(visualisationDelayTime);
 	}
 	
-	public GroverWithOracleWorkingQubit(boolean visualise, int visualisationDelayTime){
+	public Grover(boolean visualise, int visualisationDelayTime){
 		this.setVisualisation(visualise);
 		this.setVisualisationDelayTime(visualisationDelayTime);
 	}
@@ -144,7 +144,6 @@ public class GroverWithOracleWorkingQubit {
 		
 		this.visualisation.vector.setComponents(xc, yc);
 		if(firstTime){
-			System.out.println(xc + " " + yc);
 			this.visualisation.initialStateLine.setComponents(xc, yc);
 		}
 		this.visualisation.repaint();
@@ -249,7 +248,7 @@ public class GroverWithOracleWorkingQubit {
 	}
 	
 	public static void main(String[] args) throws InterruptedException {
-		GroverWithOracleWorkingQubit d = new GroverWithOracleWorkingQubit(true);
+		Grover d = new Grover(true);
 		
 		int[] solutions = new int[3];
 		solutions[0] = 0;
